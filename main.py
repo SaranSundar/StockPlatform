@@ -1,3 +1,4 @@
+import pickle
 import threading
 import time
 from random import shuffle
@@ -6,7 +7,8 @@ from timeit import default_timer as timer
 from iexfinance import get_available_symbols
 from iexfinance.stocks import Stock, get_historical_data
 
-filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 100}
+filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 100,
+           'file_name': 'data_stocks.bin'}
 
 
 def get_filtered_symbols(symbol_types: list = None) -> dict:
@@ -21,7 +23,7 @@ def get_filtered_symbols(symbol_types: list = None) -> dict:
     return filtered_symbols
 
 
-def generate_tuple_dict(keys: list, filtered_symbols: dict, input_size: int, filter_list: dict, stocks):
+def generate_tuple_dict(keys: list, filtered_symbols: dict, input_size: int, filter_list: dict, stocks: list):
     count = 0
     for key in keys:
         time.sleep(0.001)
@@ -29,17 +31,21 @@ def generate_tuple_dict(keys: list, filtered_symbols: dict, input_size: int, fil
         if stock is not None:
             stock_price = stock.get_price()
             if stock_price is not None:
-                if filter_list['min'] <= stock.get_price() <= filter_list['max']:
-                    value = filtered_symbols[key]
-                    stocks[key] = (value, stock, get_historical_data(key, output_format='pandas'))
-                    count += 1
-                    print(key)
-                if count >= input_size:
-                    break
+                try:
+                    historical_data = get_historical_data(key, output_format='pandas')
+                    if filter_list['min'] <= stock.get_price() <= filter_list['max']:
+                        value = filtered_symbols[key]
+                        stocks.append((value, stock, historical_data))
+                        count += 1
+                        print(key)
+                    if count >= input_size:
+                        break
+                except:
+                    print("Symbol " + key + " has error")
 
 
-def multithread_stocks(filtered_symbols: dict):
-    stocks = {}
+def multi_threaded_stock_search(filtered_symbols: dict) -> list:
+    stocks = []
     thread_count = 25
     threads = {}
     keys = list(filtered_symbols.keys())
@@ -65,22 +71,47 @@ def print_symbols(symbols: list):
         print(symbol['name'])
 
 
-def print_tuples(data_stocks: dict):
-    for (key, value) in data_stocks.items():
-        print(key)
-        print(value[0]['name'])
-        print(value[1].get_sector())
-        # print("Symbol: " + key + ", Company Name: " + value[0]['name'] + ", Sector: " + value[1].get_sector())
-        print()
-        # print(value[2])
+# DataStock = (Symbol, Stock, HistoricalData
+def print_tuples(data_stocks: list):
+    for data_stock in data_stocks:
+        symbol = data_stock[0]
+        stock = data_stock[1]
+        historical_data = data_stock[2]
+        abbreviated_name = symbol['name']
+        if len(abbreviated_name) > 40:
+            abbreviated_name = abbreviated_name[0:37] + "..."
+        output = (symbol['symbol'], abbreviated_name, stock.get_sector())
+        print("{0:<10} {1:<45} {2:<38}".format(*output))
+
+
+def write_data_stocks_to_file(data_stocks: list, file_name: str):
+    with open(file_name, 'wb') as f:
+        pickle.dump(data_stocks, f)
+        print("Successfully dumped list to file", file_name)
+
+
+def read_data_stocks_from_file(file_name: str) -> list:
+    with open(file_name, 'rb') as f:
+        data_stocks = pickle.load(f)
+        print("Successfully read list from file", file_name)
+    return data_stocks
+
+
+def get_data_stocks(should_download: bool) -> list:
+    if should_download:
+        filtered_symbols: dict = (get_filtered_symbols(filters['symbol_types']))
+        data_stocks: list = multi_threaded_stock_search(filtered_symbols)
+        write_data_stocks_to_file(data_stocks, filters['file_name'])
+    else:
+        data_stocks: list = read_data_stocks_from_file(
+            filters['file_name'])
+    return data_stocks
 
 
 def main():
     start = timer()
-    filtered_symbols: dict = (get_filtered_symbols(filters['symbol_types']))
-    data_stocks: dict = multithread_stocks(filtered_symbols)
-    # generate_tuple_dict(filtered_symbols, filters['search_amount'], filters['cost_options'])
-    # print_tuples(data_stocks)
+    data_stocks: list = get_data_stocks(should_download=False)
+    print_tuples(data_stocks)
     end = timer()
     print("Total time taken :", end - start, "seconds")
 
