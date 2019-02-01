@@ -1,3 +1,4 @@
+import threading
 import time
 from random import shuffle
 from timeit import default_timer as timer
@@ -5,7 +6,8 @@ from timeit import default_timer as timer
 from iexfinance import get_available_symbols
 from iexfinance.stocks import Stock, get_historical_data
 
-filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 10}
+filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 40}
+output = {}
 
 
 def get_filtered_symbols(symbol_types: list = None) -> dict:
@@ -20,7 +22,7 @@ def get_filtered_symbols(symbol_types: list = None) -> dict:
     return filtered_symbols
 
 
-def generate_tuple_dict(filtered_symbols: dict, input_size: int, filter_list: dict):
+def generate_tuple_dict(filtered_symbols: dict, input_size: int, filter_list: dict, index=0):
     stocks = {}
     count = 0
     keys = list(filtered_symbols.keys())
@@ -35,7 +37,26 @@ def generate_tuple_dict(filtered_symbols: dict, input_size: int, filter_list: di
             print(key)
         if count >= input_size:
             break
+    output[index] = stocks
     return stocks
+
+
+def multithread_stocks(filtered_symbols: dict):
+    t1 = threading.Thread(target=generate_tuple_dict,
+                          args=(filtered_symbols, filters['search_amount'] / 2, filters['cost_options'], 1))
+    t2 = threading.Thread(target=generate_tuple_dict,
+                          args=(filtered_symbols, filters['search_amount'] / 2, filters['cost_options'], 2))
+
+    # starting thread 1
+    t1.start()
+    # starting thread 2
+    t2.start()
+
+    # wait until thread 1 is completely executed
+    t1.join()
+    # wait until thread 2 is completely executed
+    t2.join()
+    print(output)
 
 
 def print_symbols(symbols: list):
@@ -56,7 +77,8 @@ def print_tuples(data_stocks: dict):
 def main():
     start = timer()
     filtered_symbols: dict = (get_filtered_symbols(filters['symbol_types']))
-    data_stocks: dict = generate_tuple_dict(filtered_symbols, filters['search_amount'], filters['cost_options'])
+    data_stocks: dict = generate_tuple_dict(filtered_symbols, filters['search_amount'], filters['cost_options'])#multithread_stocks(filtered_symbols)
+    # generate_tuple_dict(filtered_symbols, filters['search_amount'], filters['cost_options'])
     # print_tuples(data_stocks)
     end = timer()
     print("Total time taken :", end - start, "seconds")
