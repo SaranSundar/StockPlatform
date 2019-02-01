@@ -7,8 +7,9 @@ from timeit import default_timer as timer
 from iexfinance import get_available_symbols
 from iexfinance.stocks import Stock, get_historical_data
 
+# Search amount should always be divisible by max threads
 filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 100,
-           'file_name': 'data_stocks.bin'}
+           'file_name': 'data_stocks.bin', 'max_threads': 25}
 
 
 def get_filtered_symbols(symbol_types: list = None) -> dict:
@@ -27,11 +28,11 @@ def generate_tuple_dict(keys: list, filtered_symbols: dict, input_size: int, fil
     count = 0
     for key in keys:
         time.sleep(0.001)
-        stock = Stock(key)
-        if stock is not None:
-            stock_price = stock.get_price()
-            if stock_price is not None:
-                try:
+        try:
+            stock = Stock(key)
+            if stock is not None:
+                stock_price = stock.get_price()
+                if stock_price is not None:
                     historical_data = get_historical_data(key, output_format='pandas')
                     if filter_list['min'] <= stock.get_price() <= filter_list['max']:
                         value = filtered_symbols[key]
@@ -40,13 +41,13 @@ def generate_tuple_dict(keys: list, filtered_symbols: dict, input_size: int, fil
                         print(key)
                     if count >= input_size:
                         break
-                except:
-                    print("Symbol " + key + " has error")
+        except:
+            print("Symbol " + key + " has error")
 
 
 def multi_threaded_stock_search(filtered_symbols: dict) -> list:
     stocks = []
-    thread_count = 25
+    thread_count = filters['max_threads']
     threads = {}
     keys = list(filtered_symbols.keys())
     shuffle(keys)
