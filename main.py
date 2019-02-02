@@ -4,7 +4,6 @@ import time
 from random import shuffle
 from timeit import default_timer as timer
 
-import pandas as pd
 import plotly
 import plotly.graph_objs as go
 import plotly.offline as py
@@ -115,24 +114,32 @@ def get_data_stocks(should_download: bool) -> list:
     return data_stocks
 
 
-def draw_graph():
-    df = pd.read_csv('finance-charts-apple.csv')
-    trace_high = go.Scatter(
-        x=df.Date,
-        y=df['AAPL.High'],
-        name="AAPL High",
+def draw_graph(data_stock):
+    # df = pd.read_csv('finance-charts-apple.csv')
+    df = data_stock[2]
+    trace_open = go.Scatter(
+        x=df.index,
+        y=df['open'],
+        name="Open Price",
         line=dict(color='#17BECF'),
         opacity=0.8)
-    trace_low = go.Scatter(
-        x=df.Date,
-        y=df['AAPL.Low'],
-        name="AAPL Low",
-        line=dict(color='#7F7F7F'),
-        opacity=0.8)
+    # trace_high = go.Scatter(
+    #     x=df.Date,
+    #     y=df['AAPL.High'],
+    #     name="AAPL High",
+    #     line=dict(color='#17BECF'),
+    #     opacity=0.8)
+    # trace_low = go.Scatter(
+    #     x=df.Date,
+    #     y=df['AAPL.Low'],
+    #     name="AAPL Low",
+    #     line=dict(color='#7F7F7F'),
+    #     opacity=0.8)
 
-    data = [trace_high, trace_low]
+    # data = [trace_high, trace_low]
+    data = [trace_open]
     layout = dict(
-        title='Time Series with Rangeslider',
+        title=data_stock[0]['name'],
         xaxis=dict(
             rangeselector=dict(
                 buttons=list([
@@ -160,12 +167,12 @@ def draw_graph():
 
 def main():
     start = timer()
-    data_stocks: list = get_data_stocks(should_download=True)
-    print_tuples(data_stocks)
+    data_stocks: list = get_data_stocks(should_download=False)
+    # print_tuples(data_stocks)
+    draw_graph(data_stocks[0])
     end = timer()
     print("Total time taken :", end - start, "seconds")
 
 
 if __name__ == '__main__':
-    # main()
-    draw_graph()
+    main()
