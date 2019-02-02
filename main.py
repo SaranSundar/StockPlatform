@@ -4,9 +4,14 @@ import time
 from random import shuffle
 from timeit import default_timer as timer
 
+import pandas as pd
+import plotly
+import plotly.graph_objs as go
+import plotly.offline as py
 from iexfinance import get_available_symbols
 from iexfinance.stocks import Stock, get_historical_data
 
+plotly.tools.set_credentials_file(username='SS_Zeklord', api_key='Z1JPugSh0SQav7gFwBRk')
 # Search amount should always be divisible by max threads
 filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 100,
            'file_name': 'data_stocks.bin', 'max_threads': 25}
@@ -83,6 +88,7 @@ def print_tuples(data_stocks: list):
             abbreviated_name = abbreviated_name[0:37] + "..."
         output = (symbol['symbol'], abbreviated_name, stock.get_sector())
         print("{0:<10} {1:<45} {2:<38}".format(*output))
+        print(historical_data)
 
 
 def write_data_stocks_to_file(data_stocks: list, file_name: str):
@@ -109,13 +115,57 @@ def get_data_stocks(should_download: bool) -> list:
     return data_stocks
 
 
+def draw_graph():
+    df = pd.read_csv('finance-charts-apple.csv')
+    trace_high = go.Scatter(
+        x=df.Date,
+        y=df['AAPL.High'],
+        name="AAPL High",
+        line=dict(color='#17BECF'),
+        opacity=0.8)
+    trace_low = go.Scatter(
+        x=df.Date,
+        y=df['AAPL.Low'],
+        name="AAPL Low",
+        line=dict(color='#7F7F7F'),
+        opacity=0.8)
+
+    data = [trace_high, trace_low]
+    layout = dict(
+        title='Time Series with Rangeslider',
+        xaxis=dict(
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=1,
+                         label='1m',
+                         step='month',
+                         stepmode='backward'),
+                    dict(count=6,
+                         label='6m',
+                         step='month',
+                         stepmode='backward'),
+                    dict(step='all')
+                ])
+            ),
+            rangeslider=dict(
+                visible=True
+            ),
+            type='date'
+        )
+    )
+
+    fig = dict(data=data, layout=layout)
+    py.plot(fig, filename="Time Series with Rangeslider")
+
+
 def main():
     start = timer()
-    data_stocks: list = get_data_stocks(should_download=False)
+    data_stocks: list = get_data_stocks(should_download=True)
     print_tuples(data_stocks)
     end = timer()
     print("Total time taken :", end - start, "seconds")
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    draw_graph()
