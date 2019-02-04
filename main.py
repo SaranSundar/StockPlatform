@@ -10,10 +10,16 @@ import plotly.offline as py
 from iexfinance import get_available_symbols
 from iexfinance.stocks import Stock, get_historical_data
 
+# Used for Plotly API, can see graphs on there website but I use offline mode.
 plotly.tools.set_credentials_file(username='SS_Zeklord', api_key='Z1JPugSh0SQav7gFwBRk')
 # Search amount should always be divisible by max threads
 filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 100,
            'file_name': 'data_stocks.bin', 'max_threads': 25}
+
+"""
+Input is what kind of symbols you want, cs is common stock, etf is exchange traded funds.
+There are more options that we dont need for now
+"""
 
 
 def get_filtered_symbols(symbol_types: list = None) -> dict:
@@ -26,6 +32,13 @@ def get_filtered_symbols(symbol_types: list = None) -> dict:
             ticker = symbol['symbol']
             filtered_symbols[ticker] = symbol
     return filtered_symbols
+
+
+"""
+Input is a list of symbols to scrape, how many to scrape from list, and filters such as min max price,
+and an list of stocks to append results to which happens to be a tuple made of the symbol, the stock, and
+its historical data from 2015
+"""
 
 
 def generate_tuple_dict(keys: list, filtered_symbols: dict, input_size: int, filter_list: dict, stocks: list):
@@ -47,6 +60,13 @@ def generate_tuple_dict(keys: list, filtered_symbols: dict, input_size: int, fil
                         break
         except:
             print("Symbol " + key + " has error")
+
+
+"""
+Input is list of filtered symbols like common stock and exchange traded funds.
+Uses threads to make api calls and quickly scrape all stock info for each symbol given under the
+search amount.
+"""
 
 
 def multi_threaded_stock_search(filtered_symbols: dict) -> list:
@@ -90,6 +110,12 @@ def print_tuples(data_stocks: list):
         print(historical_data)
 
 
+"""
+Uses pickle to dump list of tuples to file and allows it to be read back later should user
+set the should_download parameter to false in the main method
+"""
+
+
 def write_data_stocks_to_file(data_stocks: list, file_name: str):
     with open(file_name, 'wb') as f:
         pickle.dump(data_stocks, f)
@@ -112,6 +138,13 @@ def get_data_stocks(should_download: bool) -> list:
         data_stocks: list = read_data_stocks_from_file(
             filters['file_name'])
     return data_stocks
+
+
+"""
+Uses Plotly to generate html file and opens it showing the interactive time slider graph
+with EMA SMA and Stock Price. Will be fully customizable later for whatever kind of lines want
+to be shown.
+"""
 
 
 def draw_graph(data_stock):
