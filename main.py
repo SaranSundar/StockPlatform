@@ -1,7 +1,7 @@
 import pickle
+import random
 import threading
 import time
-from random import shuffle
 from timeit import default_timer as timer
 
 import plotly
@@ -54,7 +54,7 @@ def multi_threaded_stock_search(filtered_symbols: dict) -> list:
     thread_count = filters['max_threads']
     threads = {}
     keys = list(filtered_symbols.keys())
-    shuffle(keys)
+    random.shuffle(keys)
     thread_search_amount = int(min(filters['search_amount'], len(keys)) / thread_count)
     for i in range(thread_count):
         threads[i] = threading.Thread(target=generate_tuple_dict,
@@ -123,23 +123,35 @@ def draw_graph(data_stock):
         name="Open Price",
         line=dict(color='#17BECF'),
         opacity=0.8)
-    # trace_high = go.Scatter(
-    #     x=df.Date,
-    #     y=df['AAPL.High'],
-    #     name="AAPL High",
-    #     line=dict(color='#17BECF'),
-    #     opacity=0.8)
-    # trace_low = go.Scatter(
-    #     x=df.Date,
-    #     y=df['AAPL.Low'],
-    #     name="AAPL Low",
-    #     line=dict(color='#7F7F7F'),
-    #     opacity=0.8)
+    short_rolling = df.rolling(window=20).mean()
+    short_rolling = go.Scatter(
+        x=short_rolling.index,
+        y=short_rolling['open'],
+        name="20 SMA",
+        line=dict(color='#7F7F7F'),
+        opacity=0.8)
+
+    long_rolling = df.rolling(window=100).mean()
+
+    long_rolling = go.Scatter(
+        x=long_rolling.index,
+        y=long_rolling['open'],
+        name="100 SMA",
+        line=dict(color='#FF5733'),
+        opacity=0.8)
+
+    ema_short = df.ewm(span=20, adjust=False).mean()
+    ema_short = go.Scatter(
+        x=ema_short.index,
+        y=ema_short['open'],
+        name="20 EMA",
+        line=dict(color='#FF5733'),
+        opacity=0.8)
 
     # data = [trace_high, trace_low]
-    data = [trace_open]
+    data = [trace_open, short_rolling, long_rolling, ema_short]
     layout = dict(
-        title=data_stock[0]['name'],
+        title=data_stock[0]['symbol'],
         xaxis=dict(
             rangeselector=dict(
                 buttons=list([
@@ -162,14 +174,14 @@ def draw_graph(data_stock):
     )
 
     fig = dict(data=data, layout=layout)
-    py.plot(fig, filename="Time Series with Rangeslider")
+    py.plot(fig, filename='stock_chart.html')
 
 
 def main():
     start = timer()
-    data_stocks: list = get_data_stocks(should_download=False)
+    data_stocks: list = get_data_stocks(should_download=True)
     # print_tuples(data_stocks)
-    draw_graph(data_stocks[0])
+    draw_graph(random.choice(data_stocks))
     end = timer()
     print("Total time taken :", end - start, "seconds")
 
