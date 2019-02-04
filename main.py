@@ -216,7 +216,7 @@ def draw_graph(data_stock):
 
 """Criteria: Total Area %, Number of days up or down."""
 """
-Takes any two data frames vs one another 
+Ascending or descending overall and head
 """
 
 
