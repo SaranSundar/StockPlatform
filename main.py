@@ -14,7 +14,7 @@ from iexfinance.stocks import Stock, get_historical_data
 plotly.tools.set_credentials_file(username='SS_Zeklord', api_key='Z1JPugSh0SQav7gFwBRk')
 # Search amount should always be divisible by max threads
 filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 100,
-           'file_name': 'data_stocks.bin', 'max_threads': 25}
+           'file_name': 'data_stocks.bin', 'max_threads': 25, 'search_criteria': ['+', '5%', '3days']}
 
 """
 Input is what kind of symbols you want, cs is common stock, etf is exchange traded funds.
@@ -50,12 +50,12 @@ def generate_tuple_dict(keys: list, filtered_symbols: dict, input_size: int, fil
             if stock is not None:
                 stock_price = stock.get_price()
                 if stock_price is not None:
-                    historical_data = get_historical_data(key, output_format='pandas')
                     if filter_list['min'] <= stock.get_price() <= filter_list['max']:
+                        historical_data = get_historical_data(key, output_format='pandas')
                         value = filtered_symbols[key]
-                        stocks.append((value, stock, historical_data))
+                        stocks[key] = (value, stock, historical_data)
                         count += 1
-                        print(key)
+                        # print(key)
                     if count >= input_size:
                         break
         except:
@@ -70,7 +70,7 @@ search amount.
 
 
 def multi_threaded_stock_search(filtered_symbols: dict) -> list:
-    stocks = []
+    stocks = {}
     thread_count = filters['max_threads']
     threads = {}
     keys = list(filtered_symbols.keys())
@@ -88,7 +88,7 @@ def multi_threaded_stock_search(filtered_symbols: dict) -> list:
 
     for i in range(thread_count):
         threads[i].join()
-    return stocks
+    return list(stocks.values())
 
 
 def print_symbols(symbols: list):
@@ -156,6 +156,8 @@ def draw_graph(data_stock):
         name="Open Price",
         line=dict(color='#17BECF'),
         opacity=0.8)
+
+    # This is a data frame
     short_rolling = df.rolling(window=20).mean()
     short_rolling = go.Scatter(
         x=short_rolling.index,
@@ -164,6 +166,7 @@ def draw_graph(data_stock):
         line=dict(color='#7F7F7F'),
         opacity=0.8)
 
+    # This is a data frame
     long_rolling = df.rolling(window=100).mean()
 
     long_rolling = go.Scatter(
@@ -173,6 +176,7 @@ def draw_graph(data_stock):
         line=dict(color='#FF5733'),
         opacity=0.8)
 
+    # This is a data frame
     ema_short = df.ewm(span=20, adjust=False).mean()
     ema_short = go.Scatter(
         x=ema_short.index,
@@ -208,6 +212,16 @@ def draw_graph(data_stock):
 
     fig = dict(data=data, layout=layout)
     py.plot(fig, filename='stock_chart.html')
+
+
+"""Criteria: Total Area %, Number of days up or down."""
+"""
+Takes any two data frames vs one another 
+"""
+
+
+def apply_search_criteria(data_stocks: list, time_period, search_criteria: dict, output: list):
+    return output
 
 
 def main():
