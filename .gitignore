@@ -8,3 +8,6 @@ venv/
 # Ignore node modules
 React/node_modules/
 
+# ignore pack-lock
+React/package-lock.json
+
