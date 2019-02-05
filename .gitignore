@@ -1,6 +1,6 @@
 
 # Ignore venv/ folder
-venv/
+Python/venv/
 
 # Ignore IDE
 .idea/
