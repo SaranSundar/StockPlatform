@@ -1,3 +1,4 @@
+import os
 import pickle
 import random
 import threading
@@ -7,8 +8,21 @@ from timeit import default_timer as timer
 import plotly
 import plotly.graph_objs as go
 import plotly.offline as py
+from flask import Flask, jsonify
+from flask_cors import CORS, cross_origin
 from iexfinance import get_available_symbols
 from iexfinance.stocks import Stock, get_historical_data
+
+app = Flask(__name__)
+cors = CORS(app, resources={r"/name": {"origins": "http://localhost:3000"}})
+app.config['CORS_HEADERS'] = 'Content-Type'
+
+
+@app.route("/name")
+@cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
+def get_name():
+    return jsonify("Saran")
+
 
 # Used for Plotly API, can see graphs on there website but I use offline mode.
 plotly.tools.set_credentials_file(username='SS_Zeklord', api_key='Z1JPugSh0SQav7gFwBRk')
@@ -55,7 +69,7 @@ def generate_tuple_dict(keys: list, filtered_symbols: dict, input_size: int, fil
                         value = filtered_symbols[key]
                         stocks[key] = (value, stock, historical_data)
                         count += 1
-                        # print(key)
+                        print(key)
                     if count >= input_size:
                         break
         except:
@@ -200,6 +214,10 @@ def draw_graph(data_stock):
                          label='6m',
                          step='month',
                          stepmode='backward'),
+                    dict(count=28,
+                         label='3w',
+                         step='day',
+                         stepmode='backward'),
                     dict(step='all')
                 ])
             ),
@@ -234,4 +252,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    app.run(host='0.0.0.0', port=os.environ.get('PORT', 8000), debug=True)
