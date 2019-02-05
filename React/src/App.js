@@ -5,7 +5,7 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            name: "Loading Name"
+            name: "Click button to load name"
         };
     }
 
@@ -14,16 +14,22 @@ class App extends Component {
         //this.getNewName();
     }
 
-    getNewName = () => {
+    getNewName = async () => {
+        this.setState({
+            name: "Loading"
+        });
 
-        fetch('http://localhost:8000/name', {
+        let response = await fetch('http://localhost:8000/name', {
             crossDomain: true,
             method: 'GET',
-        }).then(res => res.json()).then(json => {
-            this.setState({
-                name: json
-            });
-        })
+        });
+
+        let data = await response.json();
+
+        this.setState({
+            name: data
+        });
+
     };
 
 
@@ -31,7 +37,7 @@ class App extends Component {
         return (
             <Fragment>
                 <div>Your Name is...{this.state.name}</div>
-                <button onClick={this.getNewName}>Load Name</button>
+                <button onClick={this.getNewName}>New Name</button>
             </Fragment>
 
         );
