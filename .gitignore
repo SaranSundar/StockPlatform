@@ -1,0 +1,10 @@
+
+# Ignore venv/ folder
+venv/
+
+# Ignore IDE
+.idea/
+
+# Ignore node modules
+React/node_modules/
+
