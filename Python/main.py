@@ -21,7 +21,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 @app.route("/name")
 @cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
 def get_name():
-    return jsonify("Saran")
+    return jsonify(random.choice(["Saran", "Xavier", "John", "Alton"]))
 
 
 # Used for Plotly API, can see graphs on there website but I use offline mode.
