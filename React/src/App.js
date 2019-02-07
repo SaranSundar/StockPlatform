@@ -1,17 +1,20 @@
 import React, {Component, Fragment} from 'react';
 import './App.css';
+import {Redirect, Route, Switch} from "react-router-dom";
+import Home from "./Home/Home";
 
 class App extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            name: "Click button to load name"
-        };
-    }
 
+    render() {
+        return (
+            <Fragment>
+                <Switch>
+                    <Route path="/" exact component={Home}/>
+                    <Redirect to="/"/>
+                </Switch>
+            </Fragment>
 
-    componentDidMount() {
-        //this.getNewName();
+        );
     }
 
     getNewName = async () => {
@@ -31,17 +34,6 @@ class App extends Component {
         });
 
     };
-
-
-    render() {
-        return (
-            <Fragment>
-                <div>Your Name is...{this.state.name}</div>
-                <button onClick={this.getNewName}>New Name</button>
-            </Fragment>
-
-        );
-    }
 }
 
 export default App;

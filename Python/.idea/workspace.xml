@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="462f228d-0e63-46d3-852a-c4fa17b92d7a" name="Default Changelist" comment="" />
+    <list default="true" id="462f228d-0e63-46d3-852a-c4fa17b92d7a" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../React/src/Home/Home.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../React/src/Home/Home.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_stocks.bin" beforeDir="false" afterPath="$PROJECT_DIR$/data_stocks.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../React/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../React/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../React/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../React/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../React/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/../React/src/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../React/src/App.test.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../React/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/../React/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../React/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/../React/yarn.lock" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -9,7 +21,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/Python$main.coverage" NAME="main Coverage Results" MODIFIED="1549328133016" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Python$main.coverage" NAME="main Coverage Results" MODIFIED="1549580293529" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Server$main.coverage" NAME="main Coverage Results" MODIFIED="1549326578664" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
@@ -17,8 +29,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="400">
-              <caret line="20" column="19" lean-forward="true" selection-start-line="20" selection-start-column="19" selection-end-line="20" selection-end-column="19" />
+            <state relative-caret-position="361">
+              <caret line="19" column="12" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="25" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -48,9 +60,9 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane" />
       <pane id="PackagesPane" />
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -117,17 +129,21 @@
       <updated>1549325089160</updated>
       <workItem from="1549325090584" duration="1563000" />
       <workItem from="1549327652879" duration="813000" />
+      <workItem from="1549391805078" duration="219000" />
+      <workItem from="1549404026621" duration="775000" />
+      <workItem from="1549564901178" duration="140000" />
+      <workItem from="1549577258779" duration="914000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="2376000" />
+    <option name="totallyTimeSpent" value="4424000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1680" height="1050" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.25305623" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.26589242" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Designer" order="2" />
       <window_info id="Learn" order="3" />
@@ -141,7 +157,7 @@
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Version Control" order="8" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="9" visible="true" weight="0.15180467" />
+      <window_info anchor="bottom" id="Terminal" order="9" weight="0.15180467" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -157,8 +173,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="400">
-          <caret line="20" column="19" lean-forward="true" selection-start-line="20" selection-start-column="19" selection-end-line="20" selection-end-column="19" />
+        <state relative-caret-position="361">
+          <caret line="19" column="12" selection-start-line="19" selection-start-column="12" selection-end-line="19" selection-end-column="25" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

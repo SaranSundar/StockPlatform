@@ -9,17 +9,15 @@ import plotly
 import plotly.graph_objs as go
 import plotly.offline as py
 from flask import Flask, jsonify
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 from iexfinance import get_available_symbols
 from iexfinance.stocks import Stock, get_historical_data
 
 app = Flask(__name__)
-cors = CORS(app, resources={r"/name": {"origins": "http://localhost:3000"}})
-app.config['CORS_HEADERS'] = 'Content-Type'
+CORS(app, supports_credentials=True, resources=r'/api/*')
 
 
-@app.route("/name")
-@cross_origin(origin='localhost', headers=['Content- Type', 'Authorization'])
+@app.route("/api/v1/name/")
 def get_name():
     return jsonify(random.choice(["Saran", "Xavier", "John", "Alton"]))
 
@@ -242,15 +240,20 @@ def apply_search_criteria(data_stocks: list, time_period, search_criteria: dict,
     return output
 
 
+@app.route("/api/v1/get-stocks/")
+def get_route_stocks():
+    return jsonify(("StockName", "Stock", "PRice"))  # get_data_stocks(False))
+
+
 def main():
     start = timer()
     data_stocks: list = get_data_stocks(should_download=True)
     # print_tuples(data_stocks)
-    draw_graph(random.choice(data_stocks))
+    # draw_graph(random.choice(data_stocks))
     end = timer()
     print("Total time taken :", end - start, "seconds")
 
 
 if __name__ == '__main__':
-    # main()
     app.run(host='0.0.0.0', port=os.environ.get('PORT', 8000), debug=True)
+    main()

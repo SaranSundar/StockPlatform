@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css?family=Merriweather+Sans:600|Roboto+Mono:400');
+
+.Home {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+}
+
+.home_title {
+    font-family: 'Merriweather Sans', sans-serif;
+    font-size: 45px;
+    font-weight: 600;
+    position: relative;
+    left: 10%;
+    top: 10%;
+}
+
+.stocks_list_detailed {
+    width: 50%;
+    position: relative;
+    left: 10%;
+    top: 10%;
+    list-style: none;
+}
+
+.stocks_list_detailed li {
+    height: 70px;
+    line-height: 70px;
+    width: 100%;
+    background-color: white;
+    list-style-position: inside;
+    border: solid #bdbdbd;
+    border-width: 0 0 1px 0;
+    vertical-align: middle;
+    font-weight: 400;
+    font-family: 'Roboto Mono', sans-serif;
+    font-size: 18px;
+    display: grid;
+    grid-template-columns: 2.5fr 1fr 1fr 1fr;
+    justify-items: left;
+    grid-column-gap: 20px;
+}
