@@ -265,14 +265,13 @@ def get_route_stocks(state):
         data_stocks = get_data_stocks(True)
     elif state == "old":
         data_stocks = get_data_stocks(False)
-    print_tuples(data_stocks)
     return jsonify(**data_stocks)
 
 
 def main():
     start = timer()
     data_stocks: dict = get_data_stocks(should_download=True)
-    print_tuples(data_stocks)
+    #print_tuples(data_stocks)
     # draw_graph(random.choice(data_stocks))
     end = timer()
     print("Total time taken :", end - start, "seconds")

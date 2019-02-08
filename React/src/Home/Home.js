@@ -16,18 +16,20 @@ class Home extends Component {
             name: "Loading"
         });
         console.log("LOADING");
-        let response = await fetch('http://localhost:8000/api/v1/get-stocks/new', {
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-        });
+        let response = await fetch('http://localhost:8000/api/v1/get-stocks/new');
         console.log(response);
-        let data = await response.text();
-        let json = await JSON.parse(data);
+        let data = "";
+        let json = "";
+        try {
+            data = await response.text();
+            json = await JSON.parse(data);
+        } catch (e) {
+            console.log(data);
+            console.log(e);
+            return;
+        }
         this.setState({stocks: json});
         console.log(json);
-        //console.log(data);
 
     };
 
