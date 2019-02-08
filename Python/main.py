@@ -15,6 +15,11 @@ from iexfinance.stocks import Stock, get_historical_data
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, resources=r'/api/*')
+app.config.update(
+    DEBUG=True,
+    JSON_SORT_KEYS=False,
+    JSONIFY_PRETTYPRINT_REGULAR=False
+)
 
 
 @app.route("/api/v1/name/")
@@ -253,9 +258,14 @@ def apply_search_criteria(data_stocks: list, time_period, search_criteria: dict,
     return output
 
 
-@app.route("/api/v1/get-stocks/")
-def get_route_stocks():
-    data_stocks = get_data_stocks(False)
+@app.route("/api/v1/get-stocks/<state>")
+def get_route_stocks(state):
+    data_stocks = None
+    if state == "new":
+        data_stocks = get_data_stocks(True)
+    elif state == "old":
+        data_stocks = get_data_stocks(False)
+    print_tuples(data_stocks)
     return jsonify(**data_stocks)
 
 

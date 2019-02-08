@@ -10,22 +10,24 @@ class Home extends Component {
         }
     }
 
+    // Workws 50% of the time, has some weird json parse error
     getDataStocks = async () => {
         this.setState({
             name: "Loading"
         });
-
-        let response = await fetch('http://localhost:8000/api/v1/get-stocks/', {
+        console.log("LOADING");
+        let response = await fetch('http://localhost:8000/api/v1/get-stocks/new', {
             headers: {
                 'Content-Type': 'application/json'
             },
             credentials: 'include'
         });
-
-        let data = await response.json();
-
-        this.setState({stocks: data});
-        console.log(data);
+        console.log(response);
+        let data = await response.text();
+        let json = await JSON.parse(data);
+        this.setState({stocks: json});
+        console.log(json);
+        //console.log(data);
 
     };
 
