@@ -25,8 +25,9 @@ def get_name():
 # Used for Plotly API, can see graphs on there website but I use offline mode.
 plotly.tools.set_credentials_file(username='SS_Zeklord', api_key='Z1JPugSh0SQav7gFwBRk')
 # Search amount should always be divisible by max threads
-filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 100,
-           'file_name': 'data_stocks.bin', 'max_threads': 25, 'search_criteria': ['+', '5%', '3days']}
+filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 10,
+           'min_per_thread': 4,
+           'file_name': 'data_stocks.bin', 'max_threads': 25, 'search_criteria': ['+', '5%', '3days'], 'output': 'json'}
 
 """
 Input is what kind of symbols you want, cs is common stock, etf is exchange traded funds.
@@ -37,7 +38,7 @@ There are more options that we dont need for now
 def get_filtered_symbols(symbol_types: list = None) -> dict:
     if symbol_types is None:
         symbol_types = ['cs', 'etf']
-    supported_symbols: list = get_available_symbols(output_format='pandas')
+    supported_symbols: list = get_available_symbols(output_format=filters['output'])
     filtered_symbols: dict = {}
     for symbol in supported_symbols:
         if symbol['type'] in symbol_types:
@@ -53,9 +54,11 @@ its historical data from 2015
 """
 
 
-def generate_tuple_dict(keys: list, filtered_symbols: dict, input_size: int, filter_list: dict, stocks: list):
-    count = 0
-    for key in keys:
+# THIS METHOD CANNOT WORK BECAUSE FIRST WE NEED A LIST OF STOCKS SORTED BY PRICE
+def generate_tuple_dict(keys: list, index, filtered_symbols: dict, filter_list: dict, stocks: dict):
+    # Not guarenteed to get search amount size becase of checking filter price
+    for i in range(index[0], index[1]):
+        key = keys[i]
         time.sleep(0.001)
         try:
             stock = Stock(key)
@@ -63,15 +66,14 @@ def generate_tuple_dict(keys: list, filtered_symbols: dict, input_size: int, fil
                 stock_price = stock.get_price()
                 if stock_price is not None:
                     if filter_list['min'] <= stock.get_price() <= filter_list['max']:
-                        historical_data = get_historical_data(key, output_format='pandas')
+                        historical_data = get_historical_data(key, output_format=filters['output'])
                         value = filtered_symbols[key]
-                        stocks[key] = (value, stock, historical_data)
-                        count += 1
+                        stock_data = {'price': stock_price, 'sector': stock.get_sector()}
+                        stocks[key] = (value, stock_data, historical_data)
                         print(key)
-                    if count >= input_size:
-                        break
-        except:
+        except Exception as e:
             print("Symbol " + key + " has error")
+            print(e)
 
 
 """
@@ -81,26 +83,37 @@ search amount.
 """
 
 
-def multi_threaded_stock_search(filtered_symbols: dict) -> list:
+def multi_threaded_stock_search(filtered_symbols: dict) -> dict:
     stocks = {}
-    thread_count = filters['max_threads']
-    threads = {}
+    threads = []
     keys = list(filtered_symbols.keys())
     random.shuffle(keys)
-    thread_search_amount = int(min(filters['search_amount'], len(keys)) / thread_count)
-    for i in range(thread_count):
-        threads[i] = threading.Thread(target=generate_tuple_dict,
-                                      args=(keys[
-                                            i * thread_search_amount: (i * thread_search_amount) +
-                                                                      thread_search_amount],
-                                            filtered_symbols, thread_search_amount,
-                                            filters['cost_options'],
-                                            stocks))
-        threads[i].start()
+    # Minimum per thread
+    size = filters['min_per_thread']
+    if filters['search_amount'] >= filters['max_threads'] * filters['min_per_thread']:
+        size = int(filters['search_amount'] / filters['max_threads'])
+    stocks_left = filters['search_amount']
+    i = 0
+    active_threads = 0
+    while stocks_left > 0:
+        if active_threads == filters['max_threads'] - 1 or stocks_left < size * 2:
+            size = stocks_left
+        if i + size < len(keys):
+            index = (i, i + size)
+        else:
+            index = (i, len(keys))
+        thread = threading.Thread(target=generate_tuple_dict, args=(keys, index, filtered_symbols,
+                                                                    filters['cost_options'],
+                                                                    stocks))
+        threads.append(thread)
+        thread.start()
+        stocks_left -= size
+        i += size
+        active_threads += 1
 
-    for i in range(thread_count):
-        threads[i].join()
-    return list(stocks.values())
+    for thread in threads:
+        thread.join()
+    return stocks
 
 
 def print_symbols(symbols: list):
@@ -109,15 +122,15 @@ def print_symbols(symbols: list):
 
 
 # DataStock = (Symbol, Stock, HistoricalData
-def print_tuples(data_stocks: list):
-    for data_stock in data_stocks:
+def print_tuples(data_stocks: dict):
+    for k, data_stock in data_stocks.items():
         symbol = data_stock[0]
         stock = data_stock[1]
         historical_data = data_stock[2]
         abbreviated_name = symbol['name']
         if len(abbreviated_name) > 40:
             abbreviated_name = abbreviated_name[0:37] + "..."
-        output = (symbol['symbol'], abbreviated_name, stock.get_sector())
+        output = (symbol['symbol'], abbreviated_name, stock['sector'])
         print("{0:<10} {1:<45} {2:<38}".format(*output))
         print(historical_data)
 
@@ -128,26 +141,26 @@ set the should_download parameter to false in the main method
 """
 
 
-def write_data_stocks_to_file(data_stocks: list, file_name: str):
+def write_data_stocks_to_file(data_stocks: dict, file_name: str):
     with open(file_name, 'wb') as f:
         pickle.dump(data_stocks, f)
         print("Successfully dumped list to file", file_name)
 
 
-def read_data_stocks_from_file(file_name: str) -> list:
+def read_data_stocks_from_file(file_name: str) -> dict:
     with open(file_name, 'rb') as f:
         data_stocks = pickle.load(f)
         print("Successfully read list from file", file_name)
     return data_stocks
 
 
-def get_data_stocks(should_download: bool) -> list:
+def get_data_stocks(should_download: bool) -> dict:
     if should_download:
         filtered_symbols: dict = (get_filtered_symbols(filters['symbol_types']))
-        data_stocks: list = multi_threaded_stock_search(filtered_symbols)
+        data_stocks: dict = multi_threaded_stock_search(filtered_symbols)
         write_data_stocks_to_file(data_stocks, filters['file_name'])
     else:
-        data_stocks: list = read_data_stocks_from_file(
+        data_stocks: dict = read_data_stocks_from_file(
             filters['file_name'])
     return data_stocks
 
@@ -242,13 +255,14 @@ def apply_search_criteria(data_stocks: list, time_period, search_criteria: dict,
 
 @app.route("/api/v1/get-stocks/")
 def get_route_stocks():
-    return jsonify(("StockName", "Stock", "PRice"))  # get_data_stocks(False))
+    data_stocks = get_data_stocks(False)
+    return jsonify(**data_stocks)
 
 
 def main():
     start = timer()
-    data_stocks: list = get_data_stocks(should_download=True)
-    # print_tuples(data_stocks)
+    data_stocks: dict = get_data_stocks(should_download=True)
+    print_tuples(data_stocks)
     # draw_graph(random.choice(data_stocks))
     end = timer()
     print("Total time taken :", end - start, "seconds")

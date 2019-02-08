@@ -34,7 +34,6 @@ class Home extends Component {
             <div className="Home">
                 <div className="home_title">Filtered Stocks</div>
                 <button onClick={this.getDataStocks}>Load Stocks</button>
-                <h1>{this.state.stocks}</h1>
                 <ul className="stocks_list_detailed">
                     <li>
                         <span>Name</span>
