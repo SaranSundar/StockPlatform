@@ -4,14 +4,14 @@ import random
 import threading
 import time
 from timeit import default_timer as timer
-
 import plotly
 import plotly.graph_objs as go
 import plotly.offline as py
-from flask import Flask, jsonify
+from flask import Flask, Response
 from flask_cors import CORS
 from iexfinance import get_available_symbols
 from iexfinance.stocks import Stock, get_historical_data
+import simplejson
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, resources=r'/api/*')
@@ -27,11 +27,12 @@ data_stocks = {}
 
 @app.route("/api/v1/name/")
 def get_name():
-    return jsonify(random.choice(["Saran", "Xavier", "John", "Alton"]))
+    return simplejson.dumps(random.choice(["Saran", "Xavier", "John", "Alton"]))
 
 
 # Used for Plotly API, can see graphs on there website but I use offline mode.
-plotly.tools.set_credentials_file(username='SS_Zeklord', api_key='Z1JPugSh0SQav7gFwBRk')
+plotly.tools.set_credentials_file(
+    username='SS_Zeklord', api_key='Z1JPugSh0SQav7gFwBRk')
 # Search amount should always be divisible by max threads
 filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 10,
            'min_per_thread': 4,
@@ -47,7 +48,8 @@ There are more options that we dont need for now
 def get_filtered_symbols(symbol_types: list = None) -> dict:
     if symbol_types is None:
         symbol_types = ['cs', 'etf']
-    supported_symbols: list = get_available_symbols(output_format=filters['output'])
+    supported_symbols: list = get_available_symbols(
+        output_format=filters['output'])
     for symbol in supported_symbols:
         if symbol['type'] in symbol_types:
             ticker = symbol['symbol']
@@ -74,9 +76,11 @@ def generate_tuple_dict(keys: list, index, filter_list: dict, stocks: dict):
                 stock_price = stock.get_price()
                 if stock_price is not None:
                     if filter_list['min'] <= stock.get_price() <= filter_list['max']:
-                        historical_data = get_historical_data(key, output_format=filters['output'])
+                        historical_data = get_historical_data(
+                            key, output_format=filters['output'])
                         value = filtered_symbols[key]
-                        stock_data = {'price': stock_price, 'sector': stock.get_sector()}
+                        stock_data = {'price': stock_price,
+                                      'sector': stock.get_sector()}
                         stocks[key] = (value, stock_data, historical_data)
                         print(key)
         except Exception as e:
@@ -269,12 +273,13 @@ def apply_search_criteria(data_stocks: list, time_period, search_criteria: dict,
 def get_route_stock(stock):
     global filtered_symbols
     stock_obj = Stock(stock)
-    stock_data = {'price': stock_obj.get_price(), 'sector': stock_obj.get_sector()}
+    stock_data = {'price': stock_obj.get_price(
+    ), 'sector': stock_obj.get_sector()}
     hd = get_historical_data(stock, output_format=filters['output'])
     filtered_symbols = read_obj_from_file("filtered_symbols.bin")
     symbol = filtered_symbols[stock]
     json = {"symbol": symbol, "data": stock_data, "hd": hd}
-    return jsonify(json)
+    return Response(simplejson.dumps(json, ignore_nan=False), mimetype='text/json')
 
 
 @app.route("/api/v1/get-stocks/<state>")
@@ -284,7 +289,7 @@ def get_route_stocks(state):
         data_stocks = get_data_stocks(True)
     elif state == "old":
         data_stocks = get_data_stocks(False)
-    return jsonify(**data_stocks)
+    return Response(simplejson.dumps({**data_stocks}, ignore_nan=True), mimetype='text/json')
 
 
 def main():

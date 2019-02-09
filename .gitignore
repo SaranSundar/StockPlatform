@@ -11,3 +11,7 @@ React/node_modules/
 # ignore pack-lock
 React/package-lock.json
 
+# VSCode
+.vscode
+Python/.vscode
+React/.vscode
