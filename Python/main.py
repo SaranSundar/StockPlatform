@@ -21,6 +21,9 @@ app.config.update(
     JSONIFY_PRETTYPRINT_REGULAR=False
 )
 
+filtered_symbols = {}
+data_stocks = {}
+
 
 @app.route("/api/v1/name/")
 def get_name():
@@ -32,7 +35,8 @@ plotly.tools.set_credentials_file(username='SS_Zeklord', api_key='Z1JPugSh0SQav7
 # Search amount should always be divisible by max threads
 filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 10,
            'min_per_thread': 4,
-           'file_name': 'data_stocks.bin', 'max_threads': 25, 'search_criteria': ['+', '5%', '3days'], 'output': 'json'}
+           'file_name': 'data_stocks.bin', 'max_threads': 25, 'search_criteria': ['+', '5%', '3days'],
+           'output': 'json'}
 
 """
 Input is what kind of symbols you want, cs is common stock, etf is exchange traded funds.
@@ -44,7 +48,6 @@ def get_filtered_symbols(symbol_types: list = None) -> dict:
     if symbol_types is None:
         symbol_types = ['cs', 'etf']
     supported_symbols: list = get_available_symbols(output_format=filters['output'])
-    filtered_symbols: dict = {}
     for symbol in supported_symbols:
         if symbol['type'] in symbol_types:
             ticker = symbol['symbol']
@@ -60,7 +63,7 @@ its historical data from 2015
 
 
 # THIS METHOD CANNOT WORK BECAUSE FIRST WE NEED A LIST OF STOCKS SORTED BY PRICE
-def generate_tuple_dict(keys: list, index, filtered_symbols: dict, filter_list: dict, stocks: dict):
+def generate_tuple_dict(keys: list, index, filter_list: dict, stocks: dict):
     # Not guarenteed to get search amount size becase of checking filter price
     for i in range(index[0], index[1]):
         key = keys[i]
@@ -88,7 +91,7 @@ search amount.
 """
 
 
-def multi_threaded_stock_search(filtered_symbols: dict) -> dict:
+def multi_threaded_stock_search() -> dict:
     stocks = {}
     threads = []
     keys = list(filtered_symbols.keys())
@@ -107,7 +110,7 @@ def multi_threaded_stock_search(filtered_symbols: dict) -> dict:
             index = (i, i + size)
         else:
             index = (i, len(keys))
-        thread = threading.Thread(target=generate_tuple_dict, args=(keys, index, filtered_symbols,
+        thread = threading.Thread(target=generate_tuple_dict, args=(keys, index,
                                                                     filters['cost_options'],
                                                                     stocks))
         threads.append(thread)
@@ -127,8 +130,8 @@ def print_symbols(symbols: list):
 
 
 # DataStock = (Symbol, Stock, HistoricalData
-def print_tuples(data_stocks: dict):
-    for k, data_stock in data_stocks.items():
+def print_tuples(stocks: dict):
+    for k, data_stock in stocks.items():
         symbol = data_stock[0]
         stock = data_stock[1]
         historical_data = data_stock[2]
@@ -146,26 +149,30 @@ set the should_download parameter to false in the main method
 """
 
 
-def write_data_stocks_to_file(data_stocks: dict, file_name: str):
+def write_obj_to_file(obj, file_name: str):
     with open(file_name, 'wb') as f:
-        pickle.dump(data_stocks, f)
+        pickle.dump(obj, f)
         print("Successfully dumped list to file", file_name)
 
 
-def read_data_stocks_from_file(file_name: str) -> dict:
+def read_obj_from_file(file_name: str):
     with open(file_name, 'rb') as f:
-        data_stocks = pickle.load(f)
+        obj = pickle.load(f)
         print("Successfully read list from file", file_name)
-    return data_stocks
+    return obj
 
 
-def get_data_stocks(should_download: bool) -> dict:
+def get_data_stocks(should_download: bool):
+    global data_stocks
+    global filtered_symbols
     if should_download:
-        filtered_symbols: dict = (get_filtered_symbols(filters['symbol_types']))
-        data_stocks: dict = multi_threaded_stock_search(filtered_symbols)
-        write_data_stocks_to_file(data_stocks, filters['file_name'])
+        filtered_symbols = read_obj_from_file("filtered_symbols.bin")
+        # get_filtered_symbols(filters['symbol_types'])
+        data_stocks = multi_threaded_stock_search()
+        write_obj_to_file(data_stocks, filters['file_name'])
+        # write_obj_to_file(filtered_symbols, "filtered_symbols.bin")
     else:
-        data_stocks: dict = read_data_stocks_from_file(
+        data_stocks = read_obj_from_file(
             filters['file_name'])
     return data_stocks
 
@@ -258,9 +265,21 @@ def apply_search_criteria(data_stocks: list, time_period, search_criteria: dict,
     return output
 
 
+@app.route("/api/v1/get-stock/<stock>")
+def get_route_stock(stock):
+    global filtered_symbols
+    stock_obj = Stock(stock)
+    stock_data = {'price': stock_obj.get_price(), 'sector': stock_obj.get_sector()}
+    hd = get_historical_data(stock, output_format=filters['output'])
+    filtered_symbols = read_obj_from_file("filtered_symbols.bin")
+    symbol = filtered_symbols[stock]
+    json = {"symbol": symbol, "data": stock_data, "hd": hd}
+    return jsonify(json)
+
+
 @app.route("/api/v1/get-stocks/<state>")
 def get_route_stocks(state):
-    data_stocks = None
+    global data_stocks
     if state == "new":
         data_stocks = get_data_stocks(True)
     elif state == "old":
@@ -269,14 +288,16 @@ def get_route_stocks(state):
 
 
 def main():
+    global data_stocks
     start = timer()
-    data_stocks: dict = get_data_stocks(should_download=True)
-    #print_tuples(data_stocks)
-    # draw_graph(random.choice(data_stocks))
+    data_stocks = get_data_stocks(should_download=True)
+    # print_tuples(data_stocks)
+    keys = list(data_stocks.keys())
+    draw_graph(data_stocks[keys[0]])
     end = timer()
     print("Total time taken :", end - start, "seconds")
 
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=os.environ.get('PORT', 8000), debug=True)
-    main()
+    # main()

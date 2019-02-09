@@ -7,7 +7,8 @@ class Home extends Component {
         super(props);
         this.state = {
             stocks: null
-        }
+        };
+        this.input = React.createRef();
     }
 
     // Workws 50% of the time, has some weird json parse error
@@ -33,11 +34,40 @@ class Home extends Component {
 
     };
 
+    getOneStock = async () => {
+        this.setState({
+            name: "Loading"
+        });
+        console.log("LOADING");
+        console.log(this.getValue());
+        let response = await fetch('http://localhost:8000/api/v1/get-stock/' + this.getValue());
+        console.log(response);
+        let data = "";
+        let json = "";
+        try {
+            data = await response.text();
+            json = await JSON.parse(data);
+        } catch (e) {
+            console.log(data);
+            console.log(e);
+            return;
+        }
+        this.setState({stocks: json});
+        console.log(json);
+
+    };
+
+    getValue = () => {
+        return this.input.current.value;
+    };
+
     render() {
         return (
             <div className="Home">
-                <div className="home_title">Filtered Stocks</div>
-                <button onClick={this.getDataStocks}>Load Stocks</button>
+                {/*<div className="home_title">Filtered Stocks</div>*/}
+                <button onClick={this.getOneStock}>Load One Stock</button>
+                <button onClick={this.getDataStocks}>Load All Stocks</button>
+                <input ref={this.input} placeholder="Enter stock name here"></input>
                 <ul className="stocks_list_detailed">
                     <li>
                         <span>Name</span>
