@@ -4,14 +4,15 @@ import random
 import threading
 import time
 from timeit import default_timer as timer
+
 import plotly
 import plotly.graph_objs as go
 import plotly.offline as py
+import simplejson
 from flask import Flask, Response
 from flask_cors import CORS
 from iexfinance import get_available_symbols
 from iexfinance.stocks import Stock, get_historical_data
-import simplejson
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, resources=r'/api/*')
@@ -34,7 +35,7 @@ def get_name():
 plotly.tools.set_credentials_file(
     username='SS_Zeklord', api_key='Z1JPugSh0SQav7gFwBRk')
 # Search amount should always be divisible by max threads
-filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 10,
+filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 100,
            'min_per_thread': 4,
            'file_name': 'data_stocks.bin', 'max_threads': 25, 'search_criteria': ['+', '5%', '3days'],
            'output': 'json'}
@@ -278,8 +279,9 @@ def get_route_stock(stock):
     hd = get_historical_data(stock, output_format=filters['output'])
     filtered_symbols = read_obj_from_file("filtered_symbols.bin")
     symbol = filtered_symbols[stock]
+    # hd = hd.dropna()
     json = {"symbol": symbol, "data": stock_data, "hd": hd}
-    return Response(simplejson.dumps(json, ignore_nan=False), mimetype='text/json')
+    return Response(simplejson.dumps(json, ignore_nan=True), mimetype='text/json')
 
 
 @app.route("/api/v1/get-stocks/<state>")
