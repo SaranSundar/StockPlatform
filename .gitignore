@@ -1,9 +1,9 @@
 
-# Ignore venv/ folder
-Python/venv/
+# Ignore all venv/ folders
+**/venv/
 
-# Ignore IDE
-.idea/
+# Ignore all .idea IDE folders
+**/.idea/
 
 # Ignore node modules
 React/node_modules/
@@ -12,6 +12,12 @@ React/node_modules/
 React/package-lock.json
 
 # VSCode
-.vscode
-Python/.vscode
-React/.vscode
+**/.vscode
+
+# Generated files
+Python/data_stocks.bin
+Python/filtered_symbols.bin
+
+# Ignore macOS system file
+**/.DS_Store
+
