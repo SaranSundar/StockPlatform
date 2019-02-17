@@ -13,6 +13,7 @@ from flask import Flask, Response
 from flask_cors import CORS
 from iexfinance import get_available_symbols
 from iexfinance.stocks import Stock, get_historical_data
+from apply_search_criteria import apply_search_criteria
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, resources=r'/api/*')
@@ -38,7 +39,7 @@ plotly.tools.set_credentials_file(
 filters = {'symbol_types': ['cs', 'etf'], 'cost_options': {'min': 11, 'max': 40}, 'search_amount': 100,
            'min_per_thread': 4,
            'file_name': 'data_stocks.bin', 'max_threads': 25, 'search_criteria': ['+', '5%', '3days'],
-           'output': 'json'}
+           'output': 'pandas'}
 
 """
 Input is what kind of symbols you want, cs is common stock, etf is exchange traded funds.
@@ -260,15 +261,6 @@ def draw_graph(data_stock):
     py.plot(fig, filename='stock_chart.html')
 
 
-"""Criteria: Total Area %, Number of days up or down."""
-"""
-Ascending or descending overall and head
-"""
-
-
-def apply_search_criteria(data_stocks: list, time_period, search_criteria: dict, output: list):
-    return output
-
 
 @app.route("/api/v1/get-stock/<stock>")
 def get_route_stock(stock):
@@ -297,8 +289,9 @@ def get_route_stocks(state):
 def main():
     global data_stocks
     start = timer()
-    data_stocks = get_data_stocks(should_download=True)
+    data_stocks = get_data_stocks(should_download=False)
     # print_tuples(data_stocks)
+    data_stocks = apply_search_criteria(data_stocks, "sector != \'Energy\' and avgVolume < 10000")
     keys = list(data_stocks.keys())
     draw_graph(data_stocks[keys[0]])
     end = timer()
@@ -306,5 +299,5 @@ def main():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=os.environ.get('PORT', 8000), debug=True)
-    # main()
+#    app.run(host='0.0.0.0', port=os.environ.get('PORT', 8000), debug=True)
+    main()
