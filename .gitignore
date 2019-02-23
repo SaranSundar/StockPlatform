@@ -15,8 +15,7 @@ React/package-lock.json
 **/.vscode
 
 # Generated files
-Python/data_stocks.bin
-Python/filtered_symbols.bin
+Python/*.bin
 
 # Ignore macOS system file
 **/.DS_Store

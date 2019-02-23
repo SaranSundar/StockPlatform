@@ -140,6 +140,7 @@ def multi_threaded_stock_search(filtered_symbols: dict, search_amount: int,
 
 def get_data_stocks(should_download: bool, file_name: str, search_amount: int = 100):
     if should_download:
+        print("Scraping Data, Please Wait...")
         symbol_types = ['cs', 'etf']
         format_type = 'json'  # Can also be pandas
         filtered_symbols = get_filtered_symbols(symbol_types, format_type)
@@ -147,6 +148,7 @@ def get_data_stocks(should_download: bool, file_name: str, search_amount: int = 
                                                   format_type)
         write_obj_to_file(data_stocks, file_name)
     else:
+        print("Reading Data, Please Wait...")
         data_stocks = read_obj_from_file(file_name)
     return data_stocks
 
@@ -176,13 +178,50 @@ def apply_filters(data_stocks: dict, filters: dict):
     return filtered_stocks
 
 
+def print_help_menu():
+    print("--------MENU-----------")
+    print("1. Display Stocks Ascending")
+    print("2. Display Stocks Descending")
+    print("3. Set Min and Max Price")
+    print("4. Download All Stocks")
+    print("5. Help Menu")
+
+
+def console_app(data_stocks: dict, filters: dict):
+    print("Welcome to Exodius v1.0")
+    print_help_menu()
+    while True:
+        try:
+            op = input(">")
+            if op == "1":
+                filters['price_descending'] = False
+                apply_filters(data_stocks, filters)
+            elif op == "2":
+                filters['price_descending'] = True
+                apply_filters(data_stocks, filters)
+            elif op == "3":
+                filters['min'] = float(input("Enter Min Price:"))
+                filters['max'] = float(input("Enter Max Price:"))
+            elif op == "4":
+                # data_stocks = get_data_stocks(should_download=True, file_name=filters['file_name'],
+                #                               search_amount=filters['search_amount'])
+                print("This option is currently too dangerous to use, so it is disabled")
+            elif op == "5" or op == "help":
+                print_help_menu()
+            else:
+                print("Please Enter A Valid Option")
+        except Exception as e:
+            print(e)
+
+
 def main():
     start = timer()
     file_name = "scraped_stocks.bin"
     should_download = False
     search_amount = 10000  # Arbitrary large value to scrape all available stocks
-    filters = {'min_price': 15, 'max_price': 45, 'price_descending': False,
-               'sectors': ["Financial Services", "Industrials", "Energy"]}
+    filters = {'min_price': 0, 'max_price': float('inf'), 'price_descending': False,
+               'sectors': ["Financial Services", "Industrials", "Energy"], 'should_download': should_download,
+               'search_amount': search_amount, 'file_name': file_name}
     data_stocks = get_data_stocks(should_download, file_name, search_amount)
     sectors = get_all_sectors(data_stocks)
     apply_filters(data_stocks, filters)
@@ -190,6 +229,7 @@ def main():
     # print_tuples(data_stocks)
     end = timer()
     print("Total time taken :", end - start, "seconds")
+    console_app(data_stocks, filters)
 
 
 if __name__ == '__main__':
