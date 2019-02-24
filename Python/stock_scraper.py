@@ -154,9 +154,12 @@ def get_data_stocks(should_download: bool, file_name: str, search_amount: int = 
 
 
 def get_all_sectors(data_stocks: dict):
-    sectors = []
+    sectors = set()
     for d_stock in data_stocks.items():
-        sectors.append(d_stock[1][1]['sector'])
+        sectors.add(d_stock[1][1]['sector'])
+    sectors = list(sectors)
+    # Removes the empty item in the set
+    sectors.__delitem__(0)
     return sectors
 
 
@@ -183,8 +186,9 @@ def print_help_menu():
     print("1. Display Stocks Ascending")
     print("2. Display Stocks Descending")
     print("3. Set Min and Max Price")
-    print("4. Download All Stocks")
-    print("5. Help Menu")
+    print("4. Display All Sectors")
+    print("5. Download All Stocks")
+    print("6. Help Menu")
 
 
 def console_app(data_stocks: dict, filters: dict):
@@ -195,35 +199,49 @@ def console_app(data_stocks: dict, filters: dict):
             op = input(">")
             if op == "1":
                 filters['price_descending'] = False
-                apply_filters(data_stocks, filters)
+                filtered_stocks = apply_filters(data_stocks, filters)
             elif op == "2":
                 filters['price_descending'] = True
-                apply_filters(data_stocks, filters)
+                filtered_stocks = apply_filters(data_stocks, filters)
             elif op == "3":
                 filters['min'] = float(input("Enter Min Price:"))
                 filters['max'] = float(input("Enter Max Price:"))
+                filtered_stocks = apply_filters(data_stocks, filters)
             elif op == "4":
+                print("------SECTORS------")
+                sectors = filters['sectors']
+                for i in range(len(sectors)):
+                    print(sectors[i], end=", ")
+                    if i + 1 < len(sectors):
+                        print(sectors[i + 1])
+                    else:
+                        print("")
+            elif op == "5":
                 # data_stocks = get_data_stocks(should_download=True, file_name=filters['file_name'],
                 #                               search_amount=filters['search_amount'])
                 print("This option is currently too dangerous to use, so it is disabled")
-            elif op == "5" or op == "help":
+            elif op == "6" or op == "help":
                 print_help_menu()
             else:
                 print("Please Enter A Valid Option")
         except Exception as e:
             print(e)
+        print("")
 
 
 def main():
     start = timer()
     file_name = "scraped_stocks.bin"
     should_download = False
-    search_amount = 10000  # Arbitrary large value to scrape all available stocks
+    search_amount = 10000  # Arbitrarily large value to scrape all available stocks
     filters = {'min_price': 0, 'max_price': float('inf'), 'price_descending': False,
-               'sectors': ["Financial Services", "Industrials", "Energy"], 'should_download': should_download,
+               'sectors': set(), 'should_download': should_download,
                'search_amount': search_amount, 'file_name': file_name}
     data_stocks = get_data_stocks(should_download, file_name, search_amount)
+    # Get all filters
     sectors = get_all_sectors(data_stocks)
+    # Ex. Sectors - "Financial Services", "Industrials", "Energy"
+    filters['sectors'] = sectors
     apply_filters(data_stocks, filters)
     print(len(data_stocks))
     # print_tuples(data_stocks)
