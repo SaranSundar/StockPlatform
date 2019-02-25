@@ -6,7 +6,7 @@ from timeit import default_timer as timer
 
 from iexfinance import get_available_symbols
 from iexfinance.stocks import Stock, get_historical_data
-
+from apply_search_criteria import apply_search_criteria
 """
 Input is what kind of symbols you want, cs is common stock, etf is exchange traded funds.
 There are more options that we dont need for now
@@ -189,7 +189,7 @@ def print_help_menu():
     print("4. Display All Sectors")
     print("5. Download All Stocks")
     print("6. Help Menu")
-
+    print("7. Filter by String")
 
 def console_app(data_stocks: dict, filters: dict):
     print("Welcome to Exodius v1.0")
@@ -222,8 +222,18 @@ def console_app(data_stocks: dict, filters: dict):
                 print("This option is currently too dangerous to use, so it is disabled")
             elif op == "6" or op == "help":
                 print_help_menu()
+            elif op == "7":
+                print("Known Terminals: window() getTrend()") 
+                searchString = input(">>")
+                #I return filtered stocks in a dict because data_stocks is a dict. That way I can chain searches in the future.
+                filtered_dict_stocks = apply_search_criteria(data_stocks, searchString)
+                for k in filtered_dict_stocks.keys():
+                    print(filtered_dict_stocks[k][0]['symbol'])
+                    print(filtered_dict_stocks[k][1]['sector'])
             else:
                 print("Please Enter A Valid Option")
+
+                
         except Exception as e:
             print(e)
         print("")
