@@ -4,7 +4,8 @@ import threading
 import time
 from timeit import default_timer as timer
 
-from iexfinance import get_available_symbols
+import simplejson
+from iexfinance.refdata import get_symbols
 from iexfinance.stocks import Stock, get_historical_data
 
 """
@@ -17,7 +18,7 @@ def get_filtered_symbols(symbol_types: list, format_type: str) -> dict:
     filtered_symbols = {}
     if symbol_types is None:
         symbol_types = ['cs', 'etf']
-    supported_symbols: list = get_available_symbols(output_format=format_type)
+    supported_symbols: list = get_symbols(output_format=format_type)
     for symbol in supported_symbols:
         if symbol['type'] in symbol_types:
             ticker = symbol['symbol']
@@ -84,6 +85,11 @@ def generate_tuple_dict(keys: list, index, stocks: dict, filtered_symbols: dict,
                     # if cost_options['min'] <= stock.get_price() <= cost_options['max']:
                     historical_data = get_historical_data(
                         key, output_format=format_type)
+                    if format_type is "pandas":
+                        # Removes all rows with NaN
+                        historical_data = historical_data.dropna(how='any')
+                    elif format_type is "json":
+                        historical_data = simplejson.dumps({**historical_data}, ignore_nan=True)
                     symbol = filtered_symbols[key]
                     stock_data = {'price': stock_price,
                                   'sector': stock.get_sector()}
@@ -142,7 +148,7 @@ def get_data_stocks(should_download: bool, file_name: str, search_amount: int = 
     if should_download:
         print("Scraping Data, Please Wait...")
         symbol_types = ['cs', 'etf']
-        format_type = 'json'  # Can also be pandas
+        format_type = 'pandas'  # Can also be pandas
         filtered_symbols = get_filtered_symbols(symbol_types, format_type)
         data_stocks = multi_threaded_stock_search(filtered_symbols, search_amount,
                                                   format_type)
@@ -232,8 +238,8 @@ def console_app(data_stocks: dict, filters: dict):
 def main():
     start = timer()
     file_name = "scraped_stocks.bin"
-    should_download = False
-    search_amount = 10000  # Arbitrarily large value to scrape all available stocks
+    should_download = True
+    search_amount = 10  # Arbitrarily large value to scrape all available stocks
     filters = {'min_price': 0, 'max_price': float('inf'), 'price_descending': False,
                'sectors': set(), 'should_download': should_download,
                'search_amount': search_amount, 'file_name': file_name}
