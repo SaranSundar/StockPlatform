@@ -7,18 +7,21 @@ from timeit import default_timer as timer
 import simplejson
 from iexfinance.refdata import get_symbols
 from iexfinance.stocks import Stock, get_historical_data
+
 from apply_search_criteria import apply_search_criteria
+
 """
 Input is what kind of symbols you want, cs is common stock, etf is exchange traded funds.
 There are more options that we dont need for now
 """
 
 
-def get_filtered_symbols(symbol_types: list, format_type: str) -> dict:
+def get_filtered_symbols(symbol_types: list) -> dict:
+    format_type: str = "json"
     filtered_symbols = {}
     if symbol_types is None:
         symbol_types = ['cs', 'etf']
-    supported_symbols: list = get_symbols(output_format=format_type)
+    supported_symbols = get_symbols(output_format=format_type)
     for symbol in supported_symbols:
         if symbol['type'] in symbol_types:
             ticker = symbol['symbol']
@@ -148,8 +151,8 @@ def get_data_stocks(should_download: bool, file_name: str, search_amount: int = 
     if should_download:
         print("Scraping Data, Please Wait...")
         symbol_types = ['cs', 'etf']
-        format_type = 'pandas'  # Can also be pandas
-        filtered_symbols = get_filtered_symbols(symbol_types, format_type)
+        format_type = 'json'  # Can also be pandas
+        filtered_symbols = get_filtered_symbols(symbol_types)
         data_stocks = multi_threaded_stock_search(filtered_symbols, search_amount,
                                                   format_type)
         write_obj_to_file(data_stocks, file_name)
@@ -197,6 +200,7 @@ def print_help_menu():
     print("6. Help Menu")
     print("7. Filter by String")
 
+
 def console_app(data_stocks: dict, filters: dict):
     print("Welcome to Exodius v1.0")
     print_help_menu()
@@ -229,30 +233,31 @@ def console_app(data_stocks: dict, filters: dict):
             elif op == "6" or op == "help":
                 print_help_menu()
             elif op == "7":
-                print("Known Terminals: window() getTrend()") 
-                searchString = input(">>")
-                #I return filtered stocks in a dict because data_stocks is a dict. That way I can chain searches in the future.
-                filtered_dict_stocks = apply_search_criteria(data_stocks, searchString)
+                print("Known Terminals: window() getTrend()")
+                search_string = input(">>")
+                # I return filtered stocks in a dict because data_stocks is a dict. That way I can chain searches in
+                # the future.
+                filtered_dict_stocks = apply_search_criteria(data_stocks, search_string)
                 for k in filtered_dict_stocks.keys():
                     print(filtered_dict_stocks[k][0]['symbol'])
                     print(filtered_dict_stocks[k][1]['sector'])
+            elif op == "exit":
+                break
             else:
                 print("Please Enter A Valid Option")
-
-                
         except Exception as e:
             print(e)
         print("")
+    print("Exodius Exiting...")
 
 
-def main():
-    start = timer()
+def start_scraping(should_download):
     file_name = "scraped_stocks.bin"
-    should_download = True
     search_amount = 10  # Arbitrarily large value to scrape all available stocks
     filters = {'min_price': 0, 'max_price': float('inf'), 'price_descending': False,
                'sectors': set(), 'should_download': should_download,
                'search_amount': search_amount, 'file_name': file_name}
+    start = timer()
     data_stocks = get_data_stocks(should_download, file_name, search_amount)
     # Get all filters
     sectors = get_all_sectors(data_stocks)
@@ -263,8 +268,10 @@ def main():
     # print_tuples(data_stocks)
     end = timer()
     print("Total time taken :", end - start, "seconds")
-    console_app(data_stocks, filters)
+    return data_stocks, filters
 
 
 if __name__ == '__main__':
-    main()
+    (data_stocks, filters) = start_scraping(should_download=False)
+    console_app(data_stocks, filters)
+    print("-------EXODIUS v1.0-------")
