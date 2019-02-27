@@ -1,9 +1,10 @@
 import os
 
+import pandas as pd
 import plotly
 import plotly.graph_objs as go
 import plotly.offline as py
-from flask import Flask, session
+from flask import Flask, session, jsonify
 from flask_cors import CORS
 from flask_session import Session
 
@@ -41,7 +42,7 @@ def draw_graph(symbol):
     # data stocks is a json dict, need to convert to data frame
     data_stock = data_stocks[symbol]
     # df = pd.read_csv('finance-charts-apple.csv')
-    df = data_stock[2]
+    df = pd.read_msgpack(data_stock[2])
     trace_open = go.Scatter(
         x=df.index,
         y=df['close'],
@@ -108,13 +109,15 @@ def draw_graph(symbol):
 
     fig = dict(data=data, layout=layout)
     py.plot(fig, filename='stock_chart.html')
+    return jsonify("Graph Being Drawn...")
 
 
 @app.route("/index")
 @app.route("/")
 def main():
     # app.logger.info('Scraping Data, Please Wait...')
-    (data_stocks, filters) = start_scraping(should_download=True)
+    file_name = "scraped_stocks2.bin"
+    (data_stocks, filters) = start_scraping(should_download=True, file_name=file_name)
     session['data_stocks'] = data_stocks
     session['filters'] = filters
     # app.logger.info('Scraping Complete.')
