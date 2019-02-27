@@ -1,5 +1,6 @@
 import pickle
 import random
+import sys
 import threading
 import time
 from timeit import default_timer as timer
@@ -9,6 +10,9 @@ from iexfinance.refdata import get_symbols
 from iexfinance.stocks import Stock, get_historical_data
 
 from apply_search_criteria import apply_search_criteria
+from graph_util import draw_graph
+
+progress = 0.0
 
 """
 Input is what kind of symbols you want, cs is common stock, etf is exchange traded funds.
@@ -74,9 +78,8 @@ its historical data from 2015
 """
 
 
-# THIS METHOD CANNOT WORK BECAUSE FIRST WE NEED A LIST OF STOCKS SORTED BY PRICE
-def generate_tuple_dict(keys: list, index, stocks: dict, filtered_symbols: dict, format_type: str):
-    # Not guaranteed to get search amount size because of checking filter price
+def generate_tuple_dict(keys: list, index, stocks: dict, filtered_symbols: dict, format_type: str, search_amount: int):
+    global progress
     for i in range(index[0], index[1]):
         key = keys[i]
         time.sleep(0.001)
@@ -91,14 +94,26 @@ def generate_tuple_dict(keys: list, index, stocks: dict, filtered_symbols: dict,
                     if format_type is "pandas":
                         # Removes all rows with NaN
                         historical_data = historical_data.dropna(how='any')
-                        historical_data = historical_data.to_msgpack()
+                        #  historical_data = historical_data.to_msgpack()
                     elif format_type is "json":
                         historical_data = simplejson.dumps({**historical_data}, ignore_nan=True)
                     symbol = filtered_symbols[key]
                     stock_data = {'price': stock_price,
                                   'sector': stock.get_sector()}
                     stocks[key] = (symbol, stock_data, historical_data)
-                    # print(key)
+                    progress += 1.0
+                    p_display = progress / search_amount
+                    p_display = round(p_display, 4) * 100
+                    # p_display = str(p_display)
+                    # p_display_arr = p_display.split(".")
+                    # p_display = p_display_arr[0] + "."
+                    # if len(p_display_arr[1]) <= 2:
+                    #     p_display += p_display[1]
+                    # else:
+                    #     p_display += p_display[1][:2]
+                    output = "Downloading " + str(p_display) + "%..."
+                    sys.stdout.write('\r' + output)
+
         except Exception as e:
             # print("Symbol " + key + " has error")
             print(e)
@@ -113,6 +128,7 @@ search amount.
 
 def multi_threaded_stock_search(filtered_symbols: dict, search_amount: int,
                                 format_type: str) -> dict:
+    global progress
     stocks = {}
     threads = []
     keys = list(filtered_symbols.keys())
@@ -136,28 +152,24 @@ def multi_threaded_stock_search(filtered_symbols: dict, search_amount: int,
         else:
             index = (i, len(keys))
         thread = threading.Thread(target=generate_tuple_dict, args=(keys, index,
-                                                                    stocks, filtered_symbols, format_type))
+                                                                    stocks, filtered_symbols, format_type,
+                                                                    search_amount))
         threads.append(thread)
         thread.start()
         stocks_left -= size
         i += size
         active_threads += 1
     progress = 0.0
-    print("Downloading 0%...")
     for thread in threads:
         thread.join()
-        progress += 1 / len(threads)
-        p_display = progress * 100
-        p_display = round(p_display, 2)
-        print("Downloading", p_display, "%...")
+    print("")
     return stocks
 
 
-def get_data_stocks(should_download: bool, file_name: str, search_amount: int = 100):
+def get_data_stocks(should_download: bool, file_name: str, search_amount: int = 100, format_type='pandas'):
     if should_download:
         print("Scraping Data, Please Wait...")
         symbol_types = ['cs', 'etf']
-        format_type = 'pandas'  # Can also be pandas
         filtered_symbols = get_filtered_symbols(symbol_types)
         data_stocks = multi_threaded_stock_search(filtered_symbols, search_amount,
                                                   format_type)
@@ -205,6 +217,7 @@ def print_help_menu():
     print("5. Download All Stocks")
     print("6. Help Menu")
     print("7. Filter by String")
+    print("8. Exit Program")
 
 
 # IMPORTANT, ANY USAGE OF THE PANDAS DATAFRAME IN THE DATASTOCK NOW REQUIRES IT TO BE DECODED WITH
@@ -249,14 +262,14 @@ def console_app(data_stocks: dict, filters: dict):
                 for k in filtered_dict_stocks.keys():
                     print(filtered_dict_stocks[k][0]['symbol'])
                     print(filtered_dict_stocks[k][1]['sector'])
-            elif op == "exit":
+            elif op == "8" or op == "exit":
+                print("Exiting Program")
                 break
             else:
                 print("Please Enter A Valid Option")
         except Exception as e:
             print(e)
         print("")
-    print("Exodius Exiting...")
 
 
 def start_scraping(should_download, file_name, search_amount=10):
@@ -264,25 +277,53 @@ def start_scraping(should_download, file_name, search_amount=10):
                'sectors': set(), 'should_download': should_download,
                'search_amount': search_amount, 'file_name': file_name}
     start = timer()
-    data_stocks = get_data_stocks(should_download, file_name, search_amount)
+    format_type = 'json'  # Can also be pandas
+    data_stocks = get_data_stocks(should_download, file_name, search_amount, format_type=format_type)
     # Get all filters
     sectors = get_all_sectors(data_stocks)
     # Ex. Sectors - "Financial Services", "Industrials", "Energy"
     filters['sectors'] = sectors
     apply_filters(data_stocks, filters)
-    print(len(data_stocks))
+    # print(len(data_stocks))
     # print_tuples(data_stocks)
     end = timer()
     print("Total time taken :", end - start, "seconds")
     return data_stocks, filters
 
 
-def main():
-    file_name = "scraped_stocks1.bin"
+"""Two test cases, more commonly will use 1 for running main data and 2 for trying new code"""
+
+
+def set1():
+    file_name = "scraped_stocks.bin"
     search_amount = 10000  # Arbitrarily large value to scrape all available stocks
     (data_stocks, filters) = start_scraping(should_download=False, file_name=file_name, search_amount=search_amount)
-    console_app(data_stocks, filters)
+    return data_stocks, filters
+
+
+def set2():
+    file_name = "scraped_stocks2.bin"
+    search_amount = 10  # Arbitrarily large value to scrape all available stocks
+    (data_stocks, filters) = start_scraping(should_download=False, file_name=file_name, search_amount=search_amount)
+    return data_stocks, filters
+
+
+def main():
+    (data_stocks2, filters2) = set2()
+    (data_stocks1, filters1) = set1()
+    # console_app(data_stocks, filters)
+    json_to_df(data_stocks2, data_stocks1)
     print("-------EXODIUS v1.0-------")
+
+
+def json_to_df(data_stocks2, data_stocks1):
+    df2 = data_stocks2['ARCT']
+    # CONVERT  THIS STRING INTO A DATA FRAME
+    json_str = df2[2]
+    df2 = data_stocks1['AAPL']
+    data_frame_ex = df2[2]
+
+    draw_graph(data_frame_ex)
 
 
 if __name__ == '__main__':
