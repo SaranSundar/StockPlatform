@@ -94,7 +94,6 @@ def generate_tuple_dict(keys: list, index, stocks: dict, filtered_symbols: dict,
                     if format_type is "pandas":
                         # Removes all rows with NaN
                         historical_data = historical_data.dropna(how='any')
-                        #  historical_data = historical_data.to_msgpack()
                     elif format_type is "json":
                         historical_data = simplejson.dumps({**historical_data}, ignore_nan=True)
                     symbol = filtered_symbols[key]
@@ -272,12 +271,11 @@ def console_app(data_stocks: dict, filters: dict):
         print("")
 
 
-def start_scraping(should_download, file_name, search_amount=10):
+def start_scraping(should_download, file_name, search_amount=10, format_type='json'):
     filters = {'min_price': 0, 'max_price': float('inf'), 'price_descending': False,
                'sectors': set(), 'should_download': should_download,
                'search_amount': search_amount, 'file_name': file_name}
     start = timer()
-    format_type = 'json'  # Can also be pandas
     data_stocks = get_data_stocks(should_download, file_name, search_amount, format_type=format_type)
     # Get all filters
     sectors = get_all_sectors(data_stocks)
@@ -297,6 +295,7 @@ def start_scraping(should_download, file_name, search_amount=10):
 def set1():
     file_name = "scraped_stocks.bin"
     search_amount = 10000  # Arbitrarily large value to scrape all available stocks
+    format_type = 'json'  # Can also be pandas
     (data_stocks, filters) = start_scraping(should_download=False, file_name=file_name, search_amount=search_amount)
     return data_stocks, filters
 
@@ -304,26 +303,27 @@ def set1():
 def set2():
     file_name = "scraped_stocks2.bin"
     search_amount = 10  # Arbitrarily large value to scrape all available stocks
-    (data_stocks, filters) = start_scraping(should_download=False, file_name=file_name, search_amount=search_amount)
+    format_type = 'pandas'  # Can also be pandas
+    (data_stocks, filters) = start_scraping(should_download=False, file_name=file_name, search_amount=search_amount,
+                                            format_type=format_type)
     return data_stocks, filters
 
 
 def main():
-    (data_stocks2, filters2) = set2()
     (data_stocks1, filters1) = set1()
+    (data_stocks2, filters2) = set2()
     # console_app(data_stocks, filters)
-    json_to_df(data_stocks2, data_stocks1)
+    json_to_df(data_stocks1, data_stocks2)
     print("-------EXODIUS v1.0-------")
 
 
-def json_to_df(data_stocks2, data_stocks1):
-    df2 = data_stocks2['ARCT']
-    # CONVERT  THIS STRING INTO A DATA FRAME
-    json_str = df2[2]
-    df2 = data_stocks1['AAPL']
-    data_frame_ex = df2[2]
+def json_to_df(data_stocks1, data_stocks2):
+    json_str_data_frame = data_stocks1['CAPL'][2]
+    # CODE GOES BELOW TO CONVERT JSON STRING TO DATAFRAME
 
-    draw_graph(data_frame_ex)
+    pandas_data_frame = data_stocks2['CAPL'][2]
+
+    draw_graph(pandas_data_frame)
 
 
 if __name__ == '__main__':

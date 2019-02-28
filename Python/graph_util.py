@@ -2,10 +2,6 @@ import plotly
 import plotly.graph_objs as go
 import plotly.offline as py
 
-# Used for Plotly API, can see graphs on there website but I use offline mode.
-plotly.tools.set_credentials_file(
-    username='SS_Zeklord', api_key='Z1JPugSh0SQav7gFwBRk')
-
 """
 Uses Plotly to generate html file and opens it showing the interactive time slider graph
 with EMA SMA and Stock Price. Will be fully customizable later for whatever kind of lines want
@@ -14,6 +10,10 @@ to be shown.
 
 
 def draw_graph(df):
+    # Used for Plotly API, can see graphs on there website but I use offline mode.
+    plotly.tools.set_credentials_file(
+        username='SS_Zeklord', api_key='Z1JPugSh0SQav7gFwBRk')
+
     trace_open = go.Scatter(
         x=df.index,
         y=df['close'],
