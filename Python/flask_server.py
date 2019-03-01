@@ -1,7 +1,7 @@
 import os
 
 import pandas as pd
-from flask import Flask, session
+from flask import Flask, session, jsonify
 from flask_cors import CORS
 from flask_session import Session
 
@@ -29,6 +29,7 @@ to be shown.
 """
 
 
+# MAKE THIS POST NOT GET
 @app.route("/api/graph/<symbol>")
 def show_graph(symbol):
     app.logger.info('Graphing symbol ' + symbol)
@@ -38,16 +39,19 @@ def show_graph(symbol):
     # df = pd.read_csv('finance-charts-apple.csv')
     df = pd.read_msgpack(data_stock[2])
     draw_graph(df)
+    return jsonify("Graph Drawn")
 
 
 @app.route("/index")
 @app.route("/")
 def main():
     # app.logger.info('Scraping Data, Please Wait...')
-    file_name = "scraped_stocks.bin"
-    (data_stocks, filters) = start_scraping(should_download=True, file_name=file_name)
-    for data_stock in data_stocks.items():
-        data_stock[2] = data_stock[2].to_msgpack()
+    file_name = "scraped_stocks2.bin"
+    (data_stocks, filters) = start_scraping(should_download=False, file_name=file_name)
+    for key, value in data_stocks.items():
+        data_stock = data_stocks[key]
+        data_stock = (data_stock[0], data_stock[1], data_stock[2].to_msgpack())
+        data_stocks[key] = data_stock
     session['data_stocks'] = data_stocks
     session['filters'] = filters
     # app.logger.info('Scraping Complete.')

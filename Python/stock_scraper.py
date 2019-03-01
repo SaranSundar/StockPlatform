@@ -318,10 +318,10 @@ def main():
 
 
 def json_to_df(data_stocks1, data_stocks2):
-    json_str_data_frame = data_stocks1['CAPL'][2]
+    json_str_data_frame = data_stocks1['NTAP'][2]
     # CODE GOES BELOW TO CONVERT JSON STRING TO DATAFRAME
 
-    pandas_data_frame = data_stocks2['CAPL'][2]
+    pandas_data_frame = data_stocks2['NTAP'][2]
 
     draw_graph(pandas_data_frame)
 
