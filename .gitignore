@@ -16,6 +16,7 @@ React/package-lock.json
 
 # Generated files
 Python/*.bin
+Python/__pycache__/
 
 # Ignore macOS system file
 **/.DS_Store

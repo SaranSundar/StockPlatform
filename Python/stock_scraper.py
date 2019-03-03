@@ -5,12 +5,12 @@ import threading
 import time
 from timeit import default_timer as timer
 
+import pandas as pd
 import simplejson
-from iexfinance.refdata import get_symbols
-from iexfinance.stocks import Stock, get_historical_data
-
 from apply_search_criteria import apply_search_criteria
 from graph_util import draw_graph
+from iexfinance.refdata import get_symbols
+from iexfinance.stocks import Stock, get_historical_data
 
 progress = 0.0
 
@@ -318,10 +318,31 @@ def main():
 
 
 def json_to_df(data_stocks1, data_stocks2):
-    json_str_data_frame = data_stocks1['NTAP'][2]
+    json_str_data_frame = data_stocks1['WTM'][2]
     # CODE GOES BELOW TO CONVERT JSON STRING TO DATAFRAME
 
-    pandas_data_frame = data_stocks2['NTAP'][2]
+    date_list = []
+    open_list = []
+    high_list = []
+    low_list = []
+    close_list = []
+    vol_list = []
+    for date in json_str_data_frame:
+        date_list.append(date)
+        day = json_str_data_frame[date]
+        open_list.append(day['open'])
+        high_list.append(day['high'])
+        low_list.append(day['low'])
+        close_list.append(day['close'])
+        vol_list.append(day['volume'])
+
+    converted_data_frame = pd.DataFrame({'date': date_list,
+                                         'open': open_list,
+                                         'high': high_list,
+                                         'low': low_list,
+                                         'close': close_list,
+                                         'volume': vol_list}).set_index('date')
+    pandas_data_frame = data_stocks2['WTM'][2]
 
     draw_graph(pandas_data_frame)
 
