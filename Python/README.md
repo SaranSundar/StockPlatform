@@ -11,4 +11,7 @@
 
     `brew install redis`
 
-3. Run stock_scraper.py
+3. Install project requirements from `requirements.txt`
+   Run `pip install -r requirements.txt`
+
+4. Run stock_scraper.py
