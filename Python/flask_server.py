@@ -4,6 +4,7 @@ import pandas as pd
 from flask import Flask, session, jsonify, Response
 from flask_cors import CORS
 from flask_session import Session
+from store import redis_set, redis_get
 
 from graph_util import draw_graph
 from stock_scraper import start_scraping
@@ -29,7 +30,7 @@ to be shown.
 @app.route("/api/graph/<symbol>", methods=["POST"])
 def show_graph(symbol):
     app.logger.info('Graphing symbol ' + symbol)
-    data_stocks = session['data_stocks']
+    data_stocks = redis_get("data_stocks")
     # data stocks is a json dict, need to convert to data frame
     data_stock = data_stocks[symbol]
     # df = pd.read_csv('finance-charts-apple.csv')
@@ -52,8 +53,8 @@ def main():
         data_stock = data_stocks[key]
         data_stock = (data_stock[0], data_stock[1], data_stock[2].to_msgpack())
         data_stocks[key] = data_stock
-    session['data_stocks'] = data_stocks
-    session['filters'] = filters
+    redis_set("data_stocks", data_stocks)
+    redis_set("filters", filters)
     # app.logger.info('Scraping Complete.')
     return '''
         <html>
