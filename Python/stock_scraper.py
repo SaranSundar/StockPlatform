@@ -1,3 +1,4 @@
+import json
 import pickle
 import random
 import sys
@@ -7,10 +8,11 @@ from timeit import default_timer as timer
 
 import pandas as pd
 import simplejson
-from apply_search_criteria import apply_search_criteria
-from graph_util import draw_graph
 from iexfinance.refdata import get_symbols
 from iexfinance.stocks import Stock, get_historical_data
+
+from apply_search_criteria import apply_search_criteria
+from graph_util import draw_graph
 
 progress = 0.0
 
@@ -296,7 +298,8 @@ def set1():
     file_name = "scraped_stocks.bin"
     search_amount = 10000  # Arbitrarily large value to scrape all available stocks
     format_type = 'json'  # Can also be pandas
-    (data_stocks, filters) = start_scraping(should_download=False, file_name=file_name, search_amount=search_amount)
+    (data_stocks, filters) = start_scraping(should_download=False, file_name=file_name, search_amount=search_amount,
+                                            format_type=format_type)
     return data_stocks, filters
 
 
@@ -320,6 +323,7 @@ def main():
 def json_to_df(data_stocks1, data_stocks2):
     json_str_data_frame = data_stocks1['WTM'][2]
     # CODE GOES BELOW TO CONVERT JSON STRING TO DATAFRAME
+    json_str_data_frame = json.loads(json_str_data_frame)
 
     date_list = []
     open_list = []
@@ -342,9 +346,9 @@ def json_to_df(data_stocks1, data_stocks2):
                                          'low': low_list,
                                          'close': close_list,
                                          'volume': vol_list}).set_index('date')
-    pandas_data_frame = data_stocks2['WTM'][2]
+    # pandas_data_frame = data_stocks2['WTM'][2]
 
-    draw_graph(pandas_data_frame)
+    draw_graph(converted_data_frame)
 
 
 if __name__ == '__main__':
