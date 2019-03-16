@@ -1,3 +1,6 @@
+import json
+
+import pandas as pd
 import plotly
 import plotly.graph_objs as go
 import plotly.offline as py
@@ -80,3 +83,34 @@ def draw_graph(df):
 
     fig = dict(data=data, layout=layout)
     py.plot(fig, filename='stock_chart.html')
+
+
+def json_to_df(data_stocks1, data_stocks2):
+    json_str_data_frame = data_stocks1['WTM'][2]
+    # CODE GOES BELOW TO CONVERT JSON STRING TO DATAFRAME
+    json_str_data_frame = json.loads(json_str_data_frame)
+
+    date_list = []
+    open_list = []
+    high_list = []
+    low_list = []
+    close_list = []
+    vol_list = []
+    for date in json_str_data_frame:
+        date_list.append(date)
+        day = json_str_data_frame[date]
+        open_list.append(day['open'])
+        high_list.append(day['high'])
+        low_list.append(day['low'])
+        close_list.append(day['close'])
+        vol_list.append(day['volume'])
+
+    converted_data_frame = pd.DataFrame({'date': date_list,
+                                         'open': open_list,
+                                         'high': high_list,
+                                         'low': low_list,
+                                         'close': close_list,
+                                         'volume': vol_list}).set_index('date')
+    # pandas_data_frame = data_stocks2['WTM'][2]
+
+    draw_graph(converted_data_frame)

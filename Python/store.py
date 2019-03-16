@@ -1,4 +1,5 @@
 from pickle import dumps, loads
+
 from redis import Redis
 
 # Instantiate the Redis client

@@ -1,4 +1,3 @@
-import json
 import pickle
 import random
 import sys
@@ -6,13 +5,12 @@ import threading
 import time
 from timeit import default_timer as timer
 
-import pandas as pd
 import simplejson
 from iexfinance.refdata import get_symbols
 from iexfinance.stocks import Stock, get_historical_data
 
 from apply_search_criteria import apply_search_criteria
-from graph_util import draw_graph
+from stock_analysis import get_percent_change, get_stocks_percent
 
 progress = 0.0
 
@@ -297,7 +295,7 @@ def start_scraping(should_download, file_name, search_amount=10, format_type='js
 def set1():
     file_name = "scraped_stocks.bin"
     search_amount = 10000  # Arbitrarily large value to scrape all available stocks
-    format_type = 'json'  # Can also be pandas
+    format_type = 'pandas'  # Can also be pandas
     (data_stocks, filters) = start_scraping(should_download=False, file_name=file_name, search_amount=search_amount,
                                             format_type=format_type)
     return data_stocks, filters
@@ -307,7 +305,7 @@ def set2():
     file_name = "scraped_stocks2.bin"
     search_amount = 10  # Arbitrarily large value to scrape all available stocks
     format_type = 'pandas'  # Can also be pandas
-    (data_stocks, filters) = start_scraping(should_download=True, file_name=file_name, search_amount=search_amount,
+    (data_stocks, filters) = start_scraping(should_download=False, file_name=file_name, search_amount=search_amount,
                                             format_type=format_type)
     return data_stocks, filters
 
@@ -315,40 +313,9 @@ def set2():
 def main():
     # (data_stocks1, filters1) = set1()
     (data_stocks2, filters2) = set2()
-    console_app(data_stocks2, filters2)
-    # json_to_df(data_stocks1, data_stocks2)
+    get_stocks_percent(data_stocks2, 1.0, up=True)
+    # console_app(data_stocks2, filters2)
     print("-------EXODIUS v1.0-------")
-
-
-def json_to_df(data_stocks1, data_stocks2):
-    json_str_data_frame = data_stocks1['WTM'][2]
-    # CODE GOES BELOW TO CONVERT JSON STRING TO DATAFRAME
-    json_str_data_frame = json.loads(json_str_data_frame)
-
-    date_list = []
-    open_list = []
-    high_list = []
-    low_list = []
-    close_list = []
-    vol_list = []
-    for date in json_str_data_frame:
-        date_list.append(date)
-        day = json_str_data_frame[date]
-        open_list.append(day['open'])
-        high_list.append(day['high'])
-        low_list.append(day['low'])
-        close_list.append(day['close'])
-        vol_list.append(day['volume'])
-
-    converted_data_frame = pd.DataFrame({'date': date_list,
-                                         'open': open_list,
-                                         'high': high_list,
-                                         'low': low_list,
-                                         'close': close_list,
-                                         'volume': vol_list}).set_index('date')
-    # pandas_data_frame = data_stocks2['WTM'][2]
-
-    draw_graph(converted_data_frame)
 
 
 if __name__ == '__main__':
