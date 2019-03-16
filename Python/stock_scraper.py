@@ -303,9 +303,9 @@ def set1():
 
 def set2():
     file_name = "scraped_stocks2.bin"
-    search_amount = 10  # Arbitrarily large value to scrape all available stocks
+    search_amount = 100  # Arbitrarily large value to scrape all available stocks
     format_type = 'pandas'  # Can also be pandas
-    (data_stocks, filters) = start_scraping(should_download=False, file_name=file_name, search_amount=search_amount,
+    (data_stocks, filters) = start_scraping(should_download=True, file_name=file_name, search_amount=search_amount,
                                             format_type=format_type)
     return data_stocks, filters
 
