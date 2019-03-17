@@ -10,7 +10,7 @@ from iexfinance.refdata import get_symbols
 from iexfinance.stocks import Stock, get_historical_data
 
 from apply_search_criteria import apply_search_criteria
-from stock_analysis import get_percent_change, get_stocks_percent
+from stock_analysis import analyse_stocks, get_stocks_percent
 
 progress = 0.0
 
@@ -296,24 +296,35 @@ def set1():
     file_name = "scraped_stocks.bin"
     search_amount = 10000  # Arbitrarily large value to scrape all available stocks
     format_type = 'pandas'  # Can also be pandas
-    (data_stocks, filters) = start_scraping(should_download=False, file_name=file_name, search_amount=search_amount,
-                                            format_type=format_type)
-    return data_stocks, filters
+    should_download = False
+    return generate_set(file_name, search_amount, format_type, should_download)
 
 
 def set2():
     file_name = "scraped_stocks2.bin"
-    search_amount = 100  # Arbitrarily large value to scrape all available stocks
+    search_amount = 100000  # Arbitrarily large value to scrape all available stocks
     format_type = 'pandas'  # Can also be pandas
-    (data_stocks, filters) = start_scraping(should_download=True, file_name=file_name, search_amount=search_amount,
-                                            format_type=format_type)
-    return data_stocks, filters
+    should_download = False
+    return generate_set(file_name, search_amount, format_type, should_download, new_analysis=False)
+
+
+def generate_set(file_name, search_amount, format_type, should_download, analysed_fn='anly_stk_', new_analysis=False):
+    (data_stocks, filters) = start_scraping(should_download, file_name, search_amount,
+                                            format_type)
+    analysed_fn += file_name
+    if should_download or new_analysis:
+        analysed_stocks = analyse_stocks(data_stocks)
+        write_obj_to_file(analysed_stocks, analysed_fn)
+    else:
+        analysed_stocks = read_obj_from_file(analysed_fn)
+
+    return data_stocks, filters, analysed_stocks
 
 
 def main():
-    # (data_stocks1, filters1) = set1()
-    (data_stocks2, filters2) = set2()
-    get_stocks_percent(data_stocks2, 1.0, up=True)
+    # (data_stocks1, filters1, analysed_stocks) = set1()
+    (data_stocks2, filters2, analysed_stocks) = set2()
+    get_stocks_percent(analysed_stocks, percent=1.0, up=True)
     # console_app(data_stocks2, filters2)
     print("-------EXODIUS v1.0-------")
 
