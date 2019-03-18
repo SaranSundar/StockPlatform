@@ -11,7 +11,7 @@ from iexfinance.refdata import get_symbols
 from iexfinance.stocks import Stock, get_historical_data
 
 from apply_search_criteria import apply_search_criteria
-from stock_analysis import analyse_stocks
+from stock_analysis import analyse_stocks, get_stocks_percent
 
 progress = 0.0
 
@@ -301,20 +301,23 @@ def set1():
     return generate_set(file_name, search_amount, format_type, should_download)
 
 
-def set2():
+def set2(starting_date=5, ending_date=0):
     file_name = "scraped_stocks2.bin"
     search_amount = 100000  # Arbitrarily large value to scrape all available stocks
     format_type = 'pandas'  # Can also be pandas
     should_download = False
-    return generate_set(file_name, search_amount, format_type, should_download, new_analysis=False)
+    starting_date, ending_date = get_date_range(ending_date, starting_date)
+    return generate_set(file_name, search_amount, format_type, should_download, new_analysis=False,
+                        start_date=starting_date, end_date=ending_date)
 
 
-def generate_set(file_name, search_amount, format_type, should_download, analysed_fn='anly_stk_', new_analysis=False):
+def generate_set(file_name, search_amount, format_type, should_download, analysed_fn='anly_stk_', new_analysis=False,
+                 start_date='2019-03-11', end_date='2019-03-15'):
     (data_stocks, filters) = start_scraping(should_download, file_name, search_amount,
                                             format_type)
     analysed_fn += file_name
     if should_download or new_analysis:
-        analysed_stocks = analyse_stocks(data_stocks)
+        analysed_stocks = analyse_stocks(data_stocks, start_date, end_date, field='close')
         write_obj_to_file(analysed_stocks, analysed_fn)
     else:
         analysed_stocks = read_obj_from_file(analysed_fn)
@@ -342,10 +345,8 @@ def get_date_range(ending_date=0, starting_date=5):
 
 
 def main():
-    # (data_stocks2, filters2, analysed_stocks) = set2()
-    # get_stocks_percent(analysed_stocks, percent=float('-inf'), up=True)
-    starting_date, ending_date = get_date_range(ending_date=0, starting_date=5)
-    print(starting_date, ending_date)
+    (data_stocks2, filters2, analysed_stocks) = set2(ending_date=0, starting_date=5)
+    get_stocks_percent(analysed_stocks, percent=float('-inf'), up=True)
     # console_app(data_stocks2, filters2)
     print("-------EXODIUS v1.0-------")
 

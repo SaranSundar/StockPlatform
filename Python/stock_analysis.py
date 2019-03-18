@@ -2,7 +2,7 @@
 import sys
 
 
-def get_percent_change(time_period, field='close'):
+def get_percent_change(time_period):
     start_price = float(time_period.head(1)[field])
     end_price = float(time_period.tail(1)[field])
     diff = end_price - start_price
@@ -80,7 +80,7 @@ def print_progress(action='Downloading', progress=0.0, length=0.0):
     sys.stdout.write('\r' + output)
 
 
-def analyse_stocks(data_stocks, start_date='2019-03-11', end_date='2019-03-15',
+def analyse_stocks(data_stocks, start_date, end_date,
                    field='close'):
     result = []
     count = 0
