@@ -3,6 +3,7 @@ import random
 import sys
 import threading
 import time
+from datetime import datetime, timedelta
 from timeit import default_timer as timer
 
 import simplejson
@@ -10,7 +11,7 @@ from iexfinance.refdata import get_symbols
 from iexfinance.stocks import Stock, get_historical_data
 
 from apply_search_criteria import apply_search_criteria
-from stock_analysis import analyse_stocks, get_stocks_percent
+from stock_analysis import analyse_stocks
 
 progress = 0.0
 
@@ -321,10 +322,30 @@ def generate_set(file_name, search_amount, format_type, should_download, analyse
     return data_stocks, filters, analysed_stocks
 
 
+def get_date_range(ending_date=0, starting_date=5):
+    current_date = datetime.now()
+    ending = current_date - timedelta(days=ending_date)
+    starting = ending - timedelta(days=starting_date)
+    ending_index = ending.weekday()
+    starting_index = starting.weekday()
+    if ending_index >= 5:
+        print("End Date given was a weekend, adjusting date...")
+        ending = ending - timedelta(days=1 if ending_index == 5 else 2)
+        starting = starting - timedelta(days=1 if ending_index == 5 else 2)
+        starting_index = starting.weekday()
+    if starting_index >= 5:
+        print("Start Date given was a weekend, adjusting date...")
+        starting = starting - timedelta(days=(1 if starting_index == 5 else 2))
+    starting_date_str = str(starting).split(" ")[0]
+    ending_date_str = str(ending).split(" ")[0]
+    return starting_date_str, ending_date_str
+
+
 def main():
-    # (data_stocks1, filters1, analysed_stocks) = set1()
-    (data_stocks2, filters2, analysed_stocks) = set2()
-    get_stocks_percent(analysed_stocks, percent=1.0, up=True)
+    # (data_stocks2, filters2, analysed_stocks) = set2()
+    # get_stocks_percent(analysed_stocks, percent=float('-inf'), up=True)
+    starting_date, ending_date = get_date_range(ending_date=0, starting_date=5)
+    print(starting_date, ending_date)
     # console_app(data_stocks2, filters2)
     print("-------EXODIUS v1.0-------")
 
