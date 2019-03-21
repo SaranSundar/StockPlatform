@@ -92,7 +92,7 @@ def analyse_stocks(data_stocks, start_date, end_date,
             percent_change = get_percent_change(time_period, field)
             mavgs = get_moving_averages(data_frame)  # Short, Long, Ema
             graph_diffs: list = calculate_graph_diffs(time_period, mavgs, field)  # Size of 3
-            graph_diffs.append(calculate_graph_diffs(time_period, mavgs[0], field='volume'))
+            graph_diffs.append(calculate_graph_diffs(time_period, [mavgs[0]], field='volume'))
             info = (data_stock, percent_change, graph_diffs)
             result.append(info)
             count += 1

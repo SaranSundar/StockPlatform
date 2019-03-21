@@ -301,14 +301,14 @@ def set1():
     return generate_set(file_name, search_amount, format_type, should_download)
 
 
-def set2(starting_date=5, ending_date=0):
+def set2(start_date=5, end_date=0):
     file_name = "scraped_stocks2.bin"
     search_amount = 100000  # Arbitrarily large value to scrape all available stocks
     format_type = 'pandas'  # Can also be pandas
     should_download = False
-    starting_date, ending_date = get_date_range(ending_date, starting_date)
-    return generate_set(file_name, search_amount, format_type, should_download, new_analysis=False,
-                        start_date=starting_date, end_date=ending_date)
+    starting_date, ending_date = get_date_range(end_date, start_date)
+    return generate_set(file_name, search_amount, format_type, should_download,
+                        new_analysis=False)  # ,start_date=starting_date, end_date=ending_date)
 
 
 def generate_set(file_name, search_amount, format_type, should_download, analysed_fn='anly_stk_', new_analysis=False,
@@ -345,10 +345,11 @@ def get_date_range(ending_date=0, starting_date=5):
 
 
 def main():
+    # Right now date is also disabled since using old data it will use the default dates, look ins set2 mthod
     # This date range will be ignored if you are not scraping new values,
     # It will just used previously scraped values
     # And this range means past 5 days
-    (data_stocks2, filters2, analysed_stocks) = set2(ending_date=0, starting_date=5)
+    (data_stocks2, filters2, analysed_stocks) = set2(end_date=0, start_date=5)
     get_stocks_percent(analysed_stocks, percent=float('-inf'), up=True)
     # console_app(data_stocks2, filters2)
     print("-------EXODIUS v1.0-------")
