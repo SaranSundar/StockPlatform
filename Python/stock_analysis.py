@@ -2,7 +2,7 @@
 import sys
 
 
-def get_percent_change(time_period):
+def get_percent_change(time_period, field):
     start_price = float(time_period.head(1)[field])
     end_price = float(time_period.tail(1)[field])
     diff = end_price - start_price
@@ -36,7 +36,7 @@ def calculate_graph_diffs(graph1, mavgs, field):
     return diffs
 
 
-def get_moving_averages(history):
+def get_moving_averages(history, short=50, long=100, ema=20):
     """
         Growth Investors => Like to see moving averages trending up,
         and stock price continuously close above the moving avg.
@@ -55,9 +55,9 @@ def get_moving_averages(history):
         that's opportunity to buy because once it stops falling it will go up.
     """
     # 50 Used for both closing stock price and volume
-    short_mavg = history.rolling(window=50).mean()
-    long_mavg = history.rolling(window=100).mean()
-    emavg = history.ewm(span=20, adjust=False).mean()
+    short_mavg = history.rolling(window=short).mean()
+    long_mavg = history.rolling(window=long).mean()
+    emavg = history.ewm(span=ema, adjust=False).mean()
     return short_mavg, long_mavg, emavg
 
 
@@ -90,16 +90,17 @@ def analyse_stocks(data_stocks, start_date, end_date,
             data_frame = data_stock[2]
             time_period = data_frame[start_date:end_date]
             percent_change = get_percent_change(time_period, field)
-            mavgs = get_moving_averages(data_frame)
+            mavgs = get_moving_averages(data_frame)  # Short, Long, Ema
             graph_diffs: list = calculate_graph_diffs(time_period, mavgs, field)  # Size of 3
+            graph_diffs.append(calculate_graph_diffs(time_period, mavgs[0], field='volume'))
             info = (data_stock, percent_change, graph_diffs)
             result.append(info)
             count += 1
             print_progress("Calculating", count, length)
         except Exception as e:
-            # print("Error with stock:", stock_name)
-            # print(e)
+            print("Error with stock:", stock_name)
+            print(e)
             # Ignore these stocks, only a small amount give
             # error due to not having all data points.
-            pass
+            # pass
     return result

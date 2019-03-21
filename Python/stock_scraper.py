@@ -345,6 +345,9 @@ def get_date_range(ending_date=0, starting_date=5):
 
 
 def main():
+    # This date range will be ignored if you are not scraping new values,
+    # It will just used previously scraped values
+    # And this range means past 5 days
     (data_stocks2, filters2, analysed_stocks) = set2(ending_date=0, starting_date=5)
     get_stocks_percent(analysed_stocks, percent=float('-inf'), up=True)
     # console_app(data_stocks2, filters2)
