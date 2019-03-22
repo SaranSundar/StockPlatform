@@ -13,13 +13,15 @@ def get_percent_change(time_period, field):
     return change
 
 
-def calculate_graph_diffs(graph1, mavgs, field):
-    def calculate_graph_diff(graph2):
+def calculate_graph_diffs(graph2, mavgs, field):
+    def calculate_graph_diff(graph1):
         diff = 0.0
         totalY1 = 0.0
-        for index1, row1 in graph1.iterrows():
-            index1 = str(index1).split(" ")[0]
-            row2 = graph2.loc[index1]
+        for index, row2 in graph2.iterrows():
+            index = str(index).split(" ")[0]
+            row1 = graph1.loc[index]
+            # Y2 needs to be top graph which is usually stock price,
+            # Then Y1 is bottom graph which is moving average.
             y1 = float(row1[field])
             y2 = float(row2[field])
             totalY1 += y1
@@ -36,7 +38,25 @@ def calculate_graph_diffs(graph1, mavgs, field):
     return diffs
 
 
-def get_moving_averages(history, short=50, long=100, ema=20):
+def always_above_or_below(graph1, graph2, field, percent=0.7, is_above=True):
+    total = 0
+    above = 0
+    for index, row2 in graph2.iterrows():
+        index = str(index).split(" ")[0]
+        row1 = graph1.loc[index]
+        # Graph 2 should be stock, graph 1 should be moving average
+        y1 = float(row1[field])
+        y2 = float(row2[field])
+        total += 1
+        if is_above and y2 > y1:
+            above += 1
+        elif not is_above and y2 < y1:
+            above += 1
+    ans = above / total
+    return ans >= percent
+
+
+def is_stock_good(history, strategies, mavgs):
     """
         Growth Investors => Like to see moving averages trending up,
         and stock price continuously close above the moving avg.
@@ -54,6 +74,12 @@ def get_moving_averages(history, short=50, long=100, ema=20):
         that's bad. Stock will definitely fall down. If price falls on lower volume,
         that's opportunity to buy because once it stops falling it will go up.
     """
+    trend = get_percent_change(history, 'close')
+    if trend > 0 and always_above_or_below(mavgs[0], history, 'close'):
+        return True
+
+
+def get_moving_averages(history, short=50, long=100, ema=20):
     # 50 Used for both closing stock price and volume
     short_mavg = history.rolling(window=short).mean()
     long_mavg = history.rolling(window=long).mean()
