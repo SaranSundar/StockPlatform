@@ -308,11 +308,11 @@ def set2(start_date=5, end_date=0):
     should_download = False
     starting_date, ending_date = get_date_range(end_date, start_date)
     return generate_set(file_name, search_amount, format_type, should_download,
-                        new_analysis=False)  # ,start_date=starting_date, end_date=ending_date)
+                        new_analysis=True)  # ,start_date=starting_date, end_date=ending_date)
 
 
 def generate_set(file_name, search_amount, format_type, should_download, analysed_fn='anly_stk_', new_analysis=False,
-                 start_date='2019-03-11', end_date='2019-03-15'):
+                 start_date='2019-01-17', end_date='2019-03-15'):
     (data_stocks, filters) = start_scraping(should_download, file_name, search_amount,
                                             format_type)
     analysed_fn += file_name

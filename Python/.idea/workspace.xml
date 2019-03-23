@@ -35,8 +35,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/stock_analysis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="793">
-              <caret line="78" column="19" lean-forward="true" selection-start-line="78" selection-start-column="19" selection-end-line="78" selection-end-column="19" />
+            <state relative-caret-position="425">
+              <caret line="61" column="33" lean-forward="true" selection-start-line="61" selection-start-column="33" selection-end-line="61" selection-end-column="33" />
             </state>
           </provider>
         </entry>
@@ -108,6 +108,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -119,7 +120,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="PackagesPane" />
       <pane id="Scope" />
     </panes>
   </component>
@@ -296,11 +296,14 @@
       <workItem from="1553204826367" duration="563000" />
       <workItem from="1553205492345" duration="1437000" />
       <workItem from="1553227227132" duration="1605000" />
+      <workItem from="1553229736358" duration="149000" />
+      <workItem from="1553297224934" duration="84000" />
+      <workItem from="1553301772688" duration="453000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="80212000" />
+    <option name="totallyTimeSpent" value="80898000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -315,7 +318,7 @@
     <frame x="0" y="0" width="1680" height="1050" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.19987775" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.20721272" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Designer" order="2" />
       <window_info id="Learn" order="3" weight="0.32955974" />
@@ -545,8 +548,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/stock_analysis.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="793">
-          <caret line="78" column="19" lean-forward="true" selection-start-line="78" selection-start-column="19" selection-end-line="78" selection-end-column="19" />
+        <state relative-caret-position="425">
+          <caret line="61" column="33" lean-forward="true" selection-start-line="61" selection-start-column="33" selection-end-line="61" selection-end-column="33" />
         </state>
       </provider>
     </entry>

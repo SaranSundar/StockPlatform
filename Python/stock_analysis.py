@@ -56,6 +56,27 @@ def always_above_or_below(graph1, graph2, field, percent=0.7, is_above=True):
     return ans >= percent
 
 
+def is_volume_behavior_good(history, average, field, percent=0.7):
+    prev_price = 0.0
+    total = 0.0
+    passes = 0.0
+    for index, volume_current in history.iterrows():
+        index = str(index).split(" ")[0]
+        volume_average = average.loc[index]
+        y1 = float(volume_current['volume'])
+        y2 = float(volume_average['volume'])
+        p1 = float(volume_current[field])
+        if y1 > y2:
+            if p1 > prev_price:
+                passes += 1
+        elif y1 < y2:
+            if p1 < prev_price:
+                passes += 1
+        total += 1
+        prev_price = p1
+    return passes / total >= percent
+
+
 def is_stock_good(history, strategies, mavgs):
     """
         Growth Investors => Like to see moving averages trending up,
@@ -75,7 +96,8 @@ def is_stock_good(history, strategies, mavgs):
         that's opportunity to buy because once it stops falling it will go up.
     """
     trend = get_percent_change(history, 'close')
-    if trend > 0 and always_above_or_below(mavgs[0], history, 'close'):
+    if trend > 0 and always_above_or_below(mavgs[0], history, 'close') and is_volume_behavior_good(history, mavgs[0],
+                                                                                                   'close'):
         return True
 
 
@@ -120,7 +142,9 @@ def analyse_stocks(data_stocks, start_date, end_date,
             graph_diffs: list = calculate_graph_diffs(time_period, mavgs, field)  # Size of 3
             graph_diffs.append(calculate_graph_diffs(time_period, [mavgs[0]], field='volume'))
             info = (data_stock, percent_change, graph_diffs)
-            result.append(info)
+            if is_stock_good(time_period, None, mavgs):
+                result.append(info)
+
             count += 1
             print_progress("Calculating", count, length)
         except Exception as e:
